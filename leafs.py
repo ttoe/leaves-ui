@@ -21,12 +21,16 @@ from skimage.morphology import binary_closing, square, remove_small_objects, dis
 from skimage.util       import img_as_uint
 
 
+
 # get_leaf_props :: String -> String -> DataFrame
 def get_leaf_props(image, species_name):
 
+    # !!! filename used for debugging purposes
+    fname = image.replace("/Users/totz/Desktop/leafs/leafsnap-dataset/dataset/images/lab/", "")
+    
     # the region properties to be computed and stored
-    columns = [ "species", "area", "convex_area", "eccentricity", "equivalent_diameter", "extent"
-              , "major_axis_length", "minor_axis_length", "perimeter", "solidity" ]
+    columns = [ "filename", "species", "area", "convex_area", "eccentricity", "equivalent_diameter", "extent"
+              , "major_axis_length", "minor_axis_length", "perimeter", "solidity", "ignore" ]
     
     # creating dataframe
     df = pd.DataFrame(columns=columns)
@@ -52,31 +56,40 @@ def get_leaf_props(image, species_name):
 
     # labelling
     labelled = label(bw_closed_rem)
-    # image_label_overlay = label2rgb(labelled, image=bw_closed_rem)
+    image_label_overlay = label2rgb(labelled, image=bw_closed_rem)
 
     # computing properties
     props = regionprops(labelled, cache=True)
 
+    # !!! this should not be here once the analysis is finalized
+    # !!! probably costs too much time, useful for debugging
+    imsave(image[:-4] + ".bmp", image_label_overlay)
+    
     # looping over all regions
     # there should only ever be one region, but the image processing
     # pipeline is imperfect and there are still problems to fix here
-    if len(props) > 1:
+        
+    # is written to dataframe to later filter it out
+    ignore = "false"
+    
+    if len(props) > 1 or len(props) == 0:
         with open("/Users/totz/Desktop/leafs/multiple_regions.txt", "a") as f:
             f.write(str(len(props)) + "\t" + image + "\n")
-        image_label_overlay = label2rgb(labelled, image=bw_closed_rem)
-        imsave(image[:-4] + ".bmp", image_label_overlay)
-    else:
-        # getting the props for the only region
-        p = props[0]
-        
-        # extracting morphometric data from regionprops
-        data = [species_name, p.area, p.convex_area, p.eccentricity, p.equivalent_diameter, p.extent
-               , p.major_axis_length, p.minor_axis_length, p.perimeter, p.solidity]
+        # if there are multiple regions, set ignore to true, else it stays 0 as defined above
+        ignore = "true"
 
-        # appending data to dataframe
-        df.loc[len(df)+1] = data
+    # getting the props for the only region
+    p = props[0]
+        
+    # extracting morphometric data from regionprops
+    data = [ fname, species_name, p.area, p.convex_area, p.eccentricity, p.equivalent_diameter, p.extent
+           , p.major_axis_length, p.minor_axis_length, p.perimeter, p.solidity, ignore]
+
+    # appending data to dataframe
+    df.loc[len(df)+1] = data
     
     return df
+
 
 
 # takes a species name, which is used to build up the directory name over which will be looped
@@ -102,6 +115,12 @@ def process_images_dir(root_dir, species_name):
 
 
 
+# removing output files, clean slate
+if os.path.exists("/Users/totz/Desktop/leafs/leaf_morphometrics.csv"):
+    os.remove("/Users/totz/Desktop/leafs/leaf_morphometrics.csv")
+if os.path.exists("/Users/totz/Desktop/leafs/multiple_regions.txt"):
+    os.remove("/Users/totz/Desktop/leafs/multiple_regions.txt")
+    
 # root of the directories with species lab images
 root_dir = "/Users/totz/Desktop/leafs/leafsnap-dataset/dataset/images/lab/"
 
@@ -121,4 +140,8 @@ all_results = pd.concat(results).sort("species", ascending=1)
 
 # write data to disk
 all_results.to_csv("/Users/totz/Desktop/leafs/leaf_morphometrics.csv", index=False, float_format="%.3f")
+
+
+
+
 
