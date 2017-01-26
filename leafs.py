@@ -13,11 +13,11 @@ import os     as os
 
 from joblib             import Parallel, delayed
 from glob               import glob
-from skimage.color      import rgb2gray, label2rgb
-from skimage.filter     import threshold_otsu
-from skimage.io         import imread, imsave
+from skimage.color      import rgb2grey, label2rgb
+from skimage.filter     import threshold_otsu, rank
+from skimage.io         import imread, imsave, imshow
 from skimage.measure    import label, regionprops
-from skimage.morphology import binary_closing, square, remove_small_objects
+from skimage.morphology import binary_closing, square, remove_small_objects, disk
 from skimage.util       import img_as_uint
 
 
@@ -34,15 +34,19 @@ def get_leaf_props(image, species_name):
     # reading data
     im = imread(image)
     
-    # cropping out the interesting part
-    leaf_grey = rgb2gray(im[:600,:600])
+    # cropping out the interesting part and just using green channel
+    leaf_grey = im[:600,:600,1] #rgb2grey(im[:600,:600,:])
 
     # segmenting
-    thresh = threshold_otsu(leaf_grey)
+    # radius = 1
+    # selem = square(radius)
+    # local_thresh = rank.otsu(leaf_grey, selem)
+    global_thresh = threshold_otsu(leaf_grey)
 
     # filling holes
-    bw_closed = binary_closing(np.invert(leaf_grey > thresh))
+    bw_closed = binary_closing(np.invert(leaf_grey > global_thresh))
 
+    # !!! This could be a problem with abies ... and other small leaf plants
     # removing small objects outside of leaf
     bw_closed_rem = remove_small_objects(bw_closed, min_size=128, connectivity=2)
 
@@ -56,8 +60,15 @@ def get_leaf_props(image, species_name):
     # looping over all regions
     # there should only ever be one region, but the image processing
     # pipeline is imperfect and there are still problems to fix here
-    for p in props:
-            
+    if len(props) > 1:
+        with open("/Users/totz/Desktop/leafs/multiple_regions.txt", "a") as f:
+            f.write(str(len(props)) + "\t" + image + "\n")
+        image_label_overlay = label2rgb(labelled, image=bw_closed_rem)
+        imsave(image[:-4] + ".bmp", image_label_overlay)
+    else:
+        # getting the props for the only region
+        p = props[0]
+        
         # extracting morphometric data from regionprops
         data = [species_name, p.area, p.convex_area, p.eccentricity, p.equivalent_diameter, p.extent
                , p.major_axis_length, p.minor_axis_length, p.perimeter, p.solidity]
@@ -71,7 +82,6 @@ def get_leaf_props(image, species_name):
 # takes a species name, which is used to build up the directory name over which will be looped
 # all *.jpg images in that directory will be processed and a dataframe containing
 # several morphometric descriptors will be returned
-
 # process_images_dir :: String -> String -> DataFrame
 def process_images_dir(root_dir, species_name):
 
@@ -102,7 +112,7 @@ species = [x[1] for x in os.walk(root_dir)][0]
 num_cores = multiprocessing.cpu_count() - 1
 
 # compute the results
-results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(root_dir, i) for i in species)
+results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(root_dir, i) for i in species[:20])
 
 
 
