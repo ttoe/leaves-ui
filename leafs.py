@@ -139,9 +139,9 @@ results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(roo
 all_results = pd.concat(results).sort("species", ascending=1)
 
 # write data to disk
-all_results.to_csv("/Users/totz/Desktop/leafs/leaf_morphometrics.csv", index=False, float_format="%.3f")
+all_results.to_csv("/Users/totz/Desktop/leafs/leaf_morphometrics.csv", index=False, float_format="%.3f", decimal=",", sep=";")
 
-
-
-
+all_results.hist("extent", bins=20)
+#all_results.hist("solidity", bins=20)
+#all_results.hist("perimeter", bins=20)
 
