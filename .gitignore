@@ -1,0 +1,7 @@
+trash/
+.ipynb_checkpoints/
+leafsnap-dataset/
+leafsnap-dataset.tar
+leafs.py.bak
+*.pdf
+*.csv
