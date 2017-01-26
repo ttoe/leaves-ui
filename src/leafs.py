@@ -73,7 +73,7 @@ def get_leaf_props(image, species_name):
     ignore = "false"
     
     if len(props) > 1 or len(props) == 0:
-        with open("/Users/totz/Desktop/leafs/multiple_regions.txt", "a") as f:
+        with open("/Users/totz/Desktop/leafs/out/multiple_regions.txt", "a") as f:
             f.write(str(len(props)) + "\t" + image + "\n")
         # if there are multiple regions, set ignore to true, else it stays 0 as defined above
         ignore = "true"
@@ -116,10 +116,10 @@ def process_images_dir(root_dir, species_name):
 
 
 # removing output files, clean slate
-if os.path.exists("/Users/totz/Desktop/leafs/leaf_morphometrics.csv"):
-    os.remove("/Users/totz/Desktop/leafs/leaf_morphometrics.csv")
-if os.path.exists("/Users/totz/Desktop/leafs/multiple_regions.txt"):
-    os.remove("/Users/totz/Desktop/leafs/multiple_regions.txt")
+if os.path.exists("/Users/totz/Desktop/leafs/out/leaf_morphometrics.csv"):
+    os.remove("/Users/totz/Desktop/leafs/out/leaf_morphometrics.csv")
+if os.path.exists("/Users/totz/Desktop/leafs/out/multiple_regions.txt"):
+    os.remove("/Users/totz/Desktop/leafs/out/multiple_regions.txt")
     
 # root of the directories with species lab images
 root_dir = "/Users/totz/Desktop/leafs/leafsnap-dataset/dataset/images/lab/"
@@ -139,7 +139,7 @@ results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(roo
 all_results = pd.concat(results).sort("species", ascending=1)
 
 # write data to disk
-all_results.to_csv("/Users/totz/Desktop/leafs/leaf_morphometrics.csv", index=False, float_format="%.3f", decimal=",", sep=";")
+all_results.to_csv("/Users/totz/Desktop/leafs/out/leaf_morphometrics.csv", index=False, float_format="%.3f", decimal=",", sep=";")
 
 all_results.hist("extent", bins=20)
 #all_results.hist("solidity", bins=20)
