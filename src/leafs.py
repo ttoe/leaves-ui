@@ -7,86 +7,76 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import multiprocessing
-import numpy  as np
-import pandas as pd
-import os     as os
 
-from joblib             import Parallel, delayed
-from glob               import glob
-from skimage.color      import rgb2grey, label2rgb
-from skimage.filter     import threshold_otsu, rank
-from skimage.io         import imread, imsave, imshow
-from skimage.measure    import label, regionprops
-from skimage.morphology import binary_closing, square, remove_small_objects, disk
-from skimage.util       import img_as_uint
+import numpy              as np
+import pandas             as pd
+import os                 as os
+
+from   glob               import glob
+from   joblib             import Parallel, delayed
+from   skimage.color      import rgb2grey, label2rgb
+from   skimage.filter     import threshold_otsu, rank
+from   skimage.io         import imread, imsave, imshow
+from   skimage.measure    import label, regionprops
+from   skimage.morphology import binary_closing, square, remove_small_objects, disk
+from   skimage.util       import img_as_uint
 
 
 
-# get_leaf_props :: String -> String -> DataFrame
-def get_leaf_props(image, species_name):
+# prop_filter_predicate :: Region -> Boolean
+def region_filter(region):
+    # main concern here is that the key regions are included
+    # those are usually rectangular
+    # therefore extent is the most reliable metric to filter by
+    return (region.extent <= 0.8)
 
-    # !!! filename used for debugging purposes
-    fname = image.replace("/Users/totz/Desktop/leafs/leafsnap-dataset/dataset/images/lab/", "")
-    
-    # the region properties to be computed and stored
-    columns = [ "filename", "species", "area", "convex_area", "eccentricity", "equivalent_diameter", "extent"
-              , "major_axis_length", "minor_axis_length", "perimeter", "solidity", "ignore" ]
-    
-    # creating dataframe
-    df = pd.DataFrame(columns=columns)
+
+
+# filter_regions_by_props :: [Region] -> [Region]
+def filter_regions_by_props(regions):
+    return list(filter(region_filter, regions))
+
+
+
+# get_leaf_props :: Image -> String -> LabelledImage
+def process_and_label_image(image, species_name):
     
     # reading data
     im = imread(image)
     
     # cropping out the interesting part and just using green channel
-    leaf_grey = im[:600,:600,1] #rgb2grey(im[:600,:600,:])
-
+    leaf_grey = im[:600,:600,1]
+    
     # segmenting
-    # radius = 1
-    # selem = square(radius)
-    # local_thresh = rank.otsu(leaf_grey, selem)
     global_thresh = threshold_otsu(leaf_grey)
 
     # filling holes
     bw_closed = binary_closing(np.invert(leaf_grey > global_thresh))
 
-    # !!! This could be a problem with abies ... and other small leaf plants
     # removing small objects outside of leaf
     bw_closed_rem = remove_small_objects(bw_closed, min_size=128, connectivity=2)
 
-    # labelling
-    labelled = label(bw_closed_rem)
-    image_label_overlay = label2rgb(labelled, image=bw_closed_rem)
+    # return labelled image
+    return label(bw_closed_rem)
 
-    # computing properties
-    props = regionprops(labelled, cache=True)
 
-    # !!! this should not be here once the analysis is finalized
-    # !!! probably costs too much time, useful for debugging
-    imsave(image[:-4] + ".bmp", image_label_overlay)
+
+# get_region_props_df :: LabelledImage -> DataFrame
+def get_leaf_props_df(labelled_im, species_name):
     
-    # looping over all regions
-    # there should only ever be one region, but the image processing
-    # pipeline is imperfect and there are still problems to fix here
-        
-    # is written to dataframe to later filter it out
-    ignore = "false"
+    # getting region's properties and filtering by extent
+    regions_properties = regionprops(labelled_im, cache=True)
+    filtered_regions = filter_regions_by_props(regions_properties)
+                
+    # creating dataframe
+    df = pd.DataFrame(columns = ["species", "eccentricity", "extent", "solidity"])
     
-    if len(props) > 1 or len(props) == 0:
-        with open("/Users/totz/Desktop/leafs/out/multiple_regions.txt", "a") as f:
-            f.write(str(len(props)) + "\t" + image + "\n")
-        # if there are multiple regions, set ignore to true, else it stays 0 as defined above
-        ignore = "true"
+    if len(filtered_regions) == 1:
+        # getting the props for the only region
+        p = filtered_regions[0]
 
-    # getting the props for the only region
-    p = props[0]
-        
-    # extracting morphometric data from regionprops
-    data = [ fname, species_name, p.area, p.convex_area, p.eccentricity, p.equivalent_diameter, p.extent
-           , p.major_axis_length, p.minor_axis_length, p.perimeter, p.solidity, ignore]
-
-    # appending data to dataframe
-    df.loc[len(df)+1] = data
+        # appending data to dataframe
+        df.loc[len(df)+1] = [species_name, p.eccentricity, p.extent, p.solidity]
     
     return df
 
@@ -97,21 +87,15 @@ def get_leaf_props(image, species_name):
 # several morphometric descriptors will be returned
 # process_images_dir :: String -> String -> DataFrame
 def process_images_dir(root_dir, species_name):
-
-    # list to hold all dataframes, one per image
-    res = []
     
-    # get image filenames as a list
-    images = glob(root_dir + species_name + "/*.jpg")
+    # get image filenames as a list and map image processing over it
+    image_filenames = glob(root_dir + species_name + "/*.jpg")
+    images = map(lambda image: process_and_label_image(image, species_name), image_filenames)
     
-    # loop over all images in the current directory
-    for i in images[:10]:
+    # map over images in the current directory
+    dir_dataframes = map(lambda image: get_leaf_props_df(image, species_name), list(images)[:10])
         
-        # appending data to dataframe
-        # df.loc[len(df)+1] = get_leaf_props(i, species_name)
-        res += [get_leaf_props(i, species_name)]
-        
-    return pd.concat(res)
+    return pd.concat(dir_dataframes)
 
 
 
@@ -128,10 +112,10 @@ root_dir = "/Users/totz/Desktop/leafs/leafsnap-dataset/dataset/images/lab/"
 species = [x[1] for x in os.walk(root_dir)][0]
 
 # get the maximum number of cores available
-num_cores = multiprocessing.cpu_count() - 1
+num_cores = multiprocessing.cpu_count()
 
 # compute the results
-results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(root_dir, i) for i in species[:20])
+results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(root_dir, i) for i in species[:10])
 
 
 
@@ -141,7 +125,9 @@ all_results = pd.concat(results).sort("species", ascending=1)
 # write data to disk
 all_results.to_csv("/Users/totz/Desktop/leafs/out/leaf_morphometrics.csv", index=False, float_format="%.3f", decimal=",", sep=";")
 
-all_results.hist("extent", bins=20)
+
+
+#all_results.hist("extent", bins=20)
 #all_results.hist("solidity", bins=20)
 #all_results.hist("perimeter", bins=20)
 
