@@ -1,4 +1,5 @@
 .ipynb_checkpoints/
+__pycache__/
 leafsnap-dataset/
 leafsnap-dataset.tar
 leafs.py.bak
