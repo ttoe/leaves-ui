@@ -1,5 +1,6 @@
 import numpy              as np
 import pandas             as pd
+from   glob               import glob
 from   skimage.filters    import threshold_otsu
 from   skimage.io         import imread
 from   skimage.morphology import binary_closing, remove_small_objects
@@ -62,3 +63,16 @@ def get_leaf_props_df(labelled_im, species_name):
         df.loc[len(df)+1] = [species_name, p.eccentricity, p.extent, p.solidity, roundness]
 
     return df
+
+
+# process_images_dir :: String -> String -> DataFrame
+def process_images_dir(root_dir, species_name):
+
+    # get image filenames as a list and map image processing over it
+    image_filenames = glob(root_dir + species_name + "/*.jpg")
+    images = map(lambda image: process_and_label_image(image, species_name), image_filenames)
+
+    # map over images in the current directory
+    dir_dataframes = map(lambda image: get_leaf_props_df(image, species_name), images)
+
+    return pd.concat(dir_dataframes)
