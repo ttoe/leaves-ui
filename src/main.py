@@ -17,7 +17,7 @@ root_dir = "/Users/totz/Desktop/leafs/leafsnap-dataset/dataset/images/lab/"
 species = [x[1] for x in os.walk(root_dir)][0]
 
 # get the maximum number of cores available
-num_cores = multiprocessing.cpu_count() - 1
+num_cores = multiprocessing.cpu_count()
 
 # compute the results
 results = Parallel(n_jobs=num_cores, verbose=11)(delayed(process_images_dir)(root_dir, i) for i in species)
