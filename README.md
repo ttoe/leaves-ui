@@ -1,3 +1,3 @@
-# leafs
+# leaves
 
-An attempt to classify leafs, based on simple morphometrics.
+An attempt to classify leaves, based on simple morphometrics.
