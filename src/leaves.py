@@ -7,7 +7,7 @@ from   skimage.morphology import binary_closing, remove_small_objects
 from   skimage.measure    import label, regionprops
 
 
-# prop_filter_predicate :: Region -> Boolean
+# region_filter :: Region -> Boolean
 def region_filter(region):
     # main concern here is that the key regions are included
     # those are usually rectangular
