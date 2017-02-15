@@ -1,14 +1,56 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-import sys
+from tkinter.filedialog import askopenfilename
+from PIL import ImageTk, Image
 
-import BaseApp   as BA
-import MenuFrame as MF
-import TabFrame  as TF
-import InfoFrame as IF
+from MenuFrame import MenuFrame
+from TabFrame  import TabFrame
+from InfoFrame import InfoFrame
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app  = BA.BaseApp(root)
-    app.mainloop()
+class BaseApp(object):
+
+    def __init__(self):
+
+        # BASIC
+        self.root = tk.Tk()
+        self.root.title("Leaves UI")
+        self.frame = ttk.Frame(self.root, width=1000, height=700)
+        self.frame.pack(side="top", fill="both", expand=True)
+        
+        # MENUBAR
+        menubar = tk.Menu(self.root)
+        self.menu=dict()
+        self.menubar=menubar
+        menu_file = tk.Menu(menubar)
+        menubar.add_cascade(menu=menu_file, label="Datei", underline=0)
+        menu_file.add_command(label="Öffnen...", command=self.openFile, underline=0)
+        menu_file.add_command(label="Beenden", command=quit, underline=1)
+        self.root.config(menu=menubar)
+        self.menu["menubar"] = menubar
+        self.menu["Datei"]   = menu_file
+
+        # FRAMES    
+        menuFrame = MenuFrame(self.frame)
+        tabFrame  = TabFrame(self.frame)
+        infoFrame = InfoFrame(tabFrame.getFrame())
+        
+        menuFrame.getFrame().pack(side="left", fill="both", expand=False, padx=5, pady=5)
+        tabFrame.getFrame().pack(side="right", fill="both", expand=True, padx=5, pady=5)
+        infoFrame.getFrame().pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
+
+        # RUN IF INSTANCE CREATED
+        self.root.mainloop()
+
+    def openFile(self):
+        name = askopenfilename(initialdir="~", title="Choose an image file")
+        print(name)
+
+    def getTkImage(file):
+        return ImageTk.PhotoImage(Image.open(file))
+
+    # def getFrame(self):
+        # return(self.frame)
+
+# RUN THE APP
+app = BaseApp()
