@@ -3,18 +3,17 @@ import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 
-from MenuFrame import MenuFrame
-from TabFrame  import TabFrame
-from InfoFrame import InfoFrame
+from frames.MenuFrame import MenuFrame
+from frames.TabFrame  import TabFrame
+from frames.InfoFrame import InfoFrame
 
 
 class BaseApp(object):
-
     def __init__(self):
-
         # BASIC
         self.root = tk.Tk()
         self.root.title("Leaves UI")
+        self.root.geometry("1000x700")
         self.frame = ttk.Frame(self.root, width=1000, height=700)
         self.frame.pack(side="top", fill="both", expand=True)
         
@@ -49,8 +48,6 @@ class BaseApp(object):
     def getTkImage(file):
         return ImageTk.PhotoImage(Image.open(file))
 
-    # def getFrame(self):
-        # return(self.frame)
 
 # RUN THE APP
 app = BaseApp()
