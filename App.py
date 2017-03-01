@@ -57,8 +57,7 @@ def get_tk_image(filename):
 
 def open_file():
     """missing docstring"""
-    file_name = askopenfilename(
-        initialdir="~/Desktop/leaves-ui/img", title="Choose an image file")
+    file_name = askopenfilename(initialdir="~", title="Choose an image file")
     file_image = get_tk_image(file_name)
 
     print(file_name)
