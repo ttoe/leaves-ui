@@ -1,1 +1,1 @@
-A UI to visualize the process of analyzing leaf images.
+A GUI for viewing intermediate steps and results when processing leave images.
