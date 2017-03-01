@@ -5,8 +5,6 @@ import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 
-# BASE CLASS
-
 class BaseApp():
     """missing docstring"""
     def __init__(self):
@@ -42,7 +40,6 @@ class BaseApp():
         # ADDING FRAME LABELS
         ttk.Label(info_frame, text="info frame").pack()
         ttk.Label(menu_frame, text="menu frame").pack()
-        ttk.Label(tab_frame, text="tab frame").pack()
 
         # TAB FRAME CONTENT
         image_tabs = ttk.Notebook(tab_frame)
@@ -54,7 +51,7 @@ class BaseApp():
         image_tabs.add(labelled_tab, text="Labelled")
         image_tabs.pack()
 
-        # RUN IF INSTANCE CREATED
+        # RUN WHEN INSTANCE CREATED
         root.mainloop()
 
         # put the loaded image into a tab
