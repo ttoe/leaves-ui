@@ -1,0 +1,327 @@
+\definevimtyping [PYTHON]  [syntax=python]
+\setupcolors[state=start]
+
+\subject{main.py}
+
+\startPYTHON
+import multiprocessing
+import os     as os
+import pandas as pd
+from   glob   import glob
+from   joblib import Parallel, delayed
+from   leaves import process_images_dir
+
+# removing output
+if os.path.exists("/Users/totz/Desktop/leaves/out/leaf_morphometrics.csv"):
+    os.remove("/Users/totz/Desktop/leaves/out/leaf_morphometrics.csv")
+
+# root of the directories with species lab images
+root_dir = "/Users/totz/Desktop/leaves/leafsnap-dataset/dataset/images/lab/"
+
+# get a list of all species (subdirectories)
+species = [x[1] for x in os.walk(root_dir)][0]
+
+# get the maximum number of cores available
+num_cores = multiprocessing.cpu_count()
+
+# compute the results
+results = Parallel(n_jobs=num_cores, verbose=11)
+            (delayed(process_images_dir)(root_dir, i) for i in species)
+
+# aggregate the results in one dataframe
+all_results = pd.concat(results).sort_values(by="species")
+
+# write data to disk
+all_results.to_csv("/Users/totz/Desktop/leaves/out/leaf_morphometrics.csv"
+                  , index=False, float_format="%.3f", decimal=",", sep=";")
+\stopPYTHON
+
+\subject{leaves.py}
+
+\startPYTHON
+import numpy              as np
+import pandas             as pd
+from   glob               import glob
+from   skimage.filters    import threshold_otsu
+from   skimage.io         import imread
+from   skimage.morphology import binary_closing, remove_small_objects
+from   skimage.measure    import label, regionprops
+
+
+# region_filter :: Region -> Boolean
+def region_filter(region):
+    # main concern here is that the key regions are included
+    # those are usually rectangular
+    # therefore extent is the most reliable metric to filter by
+    return (region.extent <= 0.8)
+
+
+# filter_regions_by_props :: [Region] -> [Region]
+def filter_regions_by_props(regions):
+    return list(filter(region_filter, regions))
+
+
+# process_and_label_image :: Image -> String -> LabelledImage
+def process_and_label_image(image, species_name):
+
+    # reading data
+    im = imread(image)
+
+    # cropping out the interesting part and just using green channel
+    leaf_grey = im[:600, :600, 1]
+
+    # segmenting
+    global_thresh = threshold_otsu(leaf_grey)
+
+    # filling holes
+    bw_closed = binary_closing(np.invert(leaf_grey > global_thresh))
+
+    # removing small objects outside of leaf
+    bw_closed_rem = remove_small_objects( bw_closed
+                                        , min_size=128, connectivity=2)
+
+    # return labelled image
+    return label(bw_closed_rem)
+
+
+# get_region_props_df :: LabelledImage -> DataFrame
+def get_leaf_props_df(labelled_im, species_name):
+
+    # getting region's properties and filtering by extent
+    regions_properties = regionprops(labelled_im, cache=True)
+    filtered_regions = filter_regions_by_props(regions_properties)
+
+    # creating dataframe
+    df = pd.DataFrame(columns=[ "species", "eccentricity", "extent"
+                              , "solidity", "roundness"])
+
+    if len(filtered_regions) == 1:
+        # getting the props for the only region
+        p = filtered_regions[0]
+
+        # manually calculating roundness
+        roundness = 4 * np.pi * p.area / p.perimeter**2
+
+        # appending data to dataframe
+        df.loc[len(df)+1] = [ species_name, p.eccentricity, p.extent
+                            , p.solidity, roundness]
+
+    return df
+
+
+# process_images_dir :: String -> String -> DataFrame
+def process_images_dir(root_dir, species_name):
+
+    # get image filenames as a list and map image processing over it
+    image_filenames = glob(root_dir + species_name + "/*.jpg")
+    images = map( lambda image: process_and_label_image(image, species_name)
+                , image_filenames)
+
+    # map over images in the current directory
+    dir_dataframes = map( lambda image: get_leaf_props_df(image, species_name)
+                        , images)
+
+    return pd.concat(dir_dataframes)
+\stopPYTHON
+
+\subject{classify.py}
+
+\startPYTHON
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# reading the precomputed data, that was saved as csv
+data = pd.read_csv("../out/leaf_morphometrics_4beeeb7.csv"
+                  , sep=";", decimal=",")
+
+# selected species for which the assignment will be done
+species = [ "abies_concolor", "acer_palmatum", "acer_saccharinum"
+          , "aesculus_glabra", "amelanchier_arborea"
+          , "betula_populifolia", "juglans_nigra"
+          , "metasequoia_glyptostroboides"
+          , "robinia_pseudo-acacia", "zelkova_serrata"]
+
+# extracting the rows specified by 'species'
+selected_species = data.loc[data["species"].isin(species)]
+
+# calculating the medians of the morphometric descriptors per species
+selected_species_medians = selected_species.groupby("species").median()
+
+# selecting the data of the first single leaf of the species
+# those will be used to try and match them to their species 
+unknown_species = selected_species.groupby("species").first()
+
+# some data munging to satisfy pandas for later
+unknown_species["species"] = unknown_species.index
+
+# calculates the euclidian distance in 4d between the points given by
+# the median values for each species' descriptors and the 
+# values of the descriptors of a single leaf
+# add_dist_columns :: DataFrame -> DataFrame -> DataFrame
+def add_dist_columns(unknown_species_df, species_centerpoints_df):
+    uk = unknown_species_df.copy()
+    gms = species_centerpoints_df.copy()
+    
+    for row in uk.iterrows():
+        s = row[1] # get df object out of tuple
+        gms[s.species] = np.sqrt( (gms.eccentricity-s.eccentricity)**2 
+                                + (gms.extent-s.extent)**2 
+                                + (gms.solidity-s.solidity)**2
+                                # normalize to 1 (max is otherwise 2)
+                                + (gms.roundness-s.roundness)**2 ) / 2 
+    return gms.iloc[:,4:]
+    
+
+# compute the result dataframe using the function defined above
+res = add_dist_columns(unknown_species, selected_species_medians)
+
+# round numbers for plotting
+data = res.round(2)
+
+# set aesthetics
+sns.set()
+sns.set_context("paper")
+plt.figure(figsize=(8, 6))
+
+# plot heatmap
+ax = sns.heatmap(data.T, annot=True)
+
+# turn the axis label
+for item in ax.get_yticklabels():
+    item.set_rotation(0)
+
+for item in ax.get_xticklabels():
+    item.set_rotation(90)
+
+# save figure
+plt.savefig("../out/distances_heat.pdf", bbox_inches='tight')
+
+\stopPYTHON
+
+\subject{classify_field.py}
+
+\startPYTHON
+import multiprocessing
+import os     as os
+import pandas as pd
+import numpy  as np
+from   glob   import glob
+from   joblib import Parallel, delayed
+from   skimage.io         import imread
+from   skimage.measure    import label, regionprops
+
+
+# region_filter :: Region -> Boolean
+def region_filter(region):
+    # main concern here is that the key regions are included
+    # those are usually rectangular
+    # therefore extent is the most reliable metric to filter by
+    return (region.extent <= 0.8)
+
+
+# filter_regions_by_props :: [Region] -> [Region]
+def filter_regions_by_props(regions):
+    return list(filter(region_filter, regions))
+
+
+# get_leaf_props_df :: LabelledImage -> String -> DataFrame
+def get_leaf_props_df(labelled_im, species_name):
+
+    # getting region's properties and filtering by extent
+    regions_properties = regionprops(labelled_im, cache=True)
+    filtered_regions = filter_regions_by_props(regions_properties)
+
+    # creating dataframe
+    df = pd.DataFrame(columns=[ "species", "eccentricity"
+                              , "extent", "solidity", "roundness"])
+
+    if len(filtered_regions) == 1:
+        # getting the props for the only region
+        p = filtered_regions[0]
+
+        # manually calculating roundness
+        roundness = 4 * np.pi * p.area / p.perimeter**2
+
+        # appending data to dataframe
+        df.loc[len(df)+1] = [ species_name, p.eccentricity
+                            , p.extent, p.solidity, roundness]
+
+    return df
+
+
+# process_field_images_dir :: String -> String -> DataFrame
+def process_field_images_dir(root_dir, species_name):
+
+    # get image filenames as a list and map image processing over it
+    image_filenames = glob(root_dir + species_name + "/*.png")
+    images = map(lambda im: label(imread(im)), image_filenames)
+
+    # map over images in the current directory
+    dir_dataframes = map( lambda image: get_leaf_props_df(image, species_name)
+                        , images)
+
+    return pd.concat(dir_dataframes)
+
+
+# root of the directories with species lab images
+root_dir = "/Users/totz/Desktop/leaves/leafsnap-dataset/selected_field/"
+
+# get a list of all species (subdirectories)
+species = [x[1] for x in os.walk(root_dir)][0]
+
+# compute the results
+results = Parallel(n_jobs=1)
+            (delayed(process_field_images_dir)(root_dir, s) for s in species)
+
+
+# aggregate the results in one dataframe
+unknowns = pd.concat(results).sort_values(by="species")
+
+
+# reading the precomputed data, that was saved as csv
+data = pd.read_csv("../out/leaf_morphometrics_4beeeb7.csv"
+                  , sep=";", decimal=",")
+
+# selected species for which the assignment will be done
+species = [ "abies_concolor", "acer_palmatum", "acer_saccharinum"
+          , "aesculus_glabra", "amelanchier_arborea"
+          , "betula_populifolia", "juglans_nigra"
+          , "metasequoia_glyptostroboides"
+          , "robinia_pseudo-acacia", "zelkova_serrata"]
+
+# extracting the rows specified by 'species'
+selected_species = data.loc[data["species"].isin(species)]
+
+# calculating the medians of the morphometric descriptors per species
+selected_species_medians = selected_species.groupby("species").median()
+
+
+def calc_stats(unknown_species_df, species_centerpoints_df):
+    uk = unknown_species_df.copy()
+    gms = species_centerpoints_df.copy()
+    
+    df = pd.DataFrame(columns=["actual_species", "assigned_species"])
+    
+    for row in uk.iterrows():
+        s = row[1] # get df object out of tuple
+        distances = np.sqrt( (gms.eccentricity-s.eccentricity)**2 
+                                + (gms.extent-s.extent)**2 
+                                + (gms.solidity-s.solidity)**2
+                                + (gms.roundness-s.roundness)**2 ) / 2
+
+        df.loc[len(df)+1] = [s.species, distances.idxmin()]
+
+    return df
+
+assigned       = calc_stats(unknowns, selected_species_medians)
+count_per_spec = assigned.groupby("actual_species").count()
+correct        = assigned[assigned.actual_species == assigned.assigned_species]
+count_correct  = correct.groupby("actual_species").count()
+percent_correct = count_correct / count_per_spec * 100
+\stopPYTHON
+
+
+
+
