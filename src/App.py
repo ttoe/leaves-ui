@@ -54,26 +54,30 @@ class BaseApp():
         # DEFAULT VALUES
 
         # initial image
-        self.file_image = get_tk_image("/Users/totz/Desktop/leaves-ui/img/init.jpg")
-        self.original_image = ttk.Label(self.original_tab, image=self.file_image)
+        self.image_file = ImageTk.PhotoImage(
+            Image.open("/Users/totz/Desktop/leaves-ui/img/init.jpg"))
+        self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
 
         # RUN WHEN INSTANCE CREATED
         self.root.mainloop()
 
+    # HELPER FUNCTIONS
+
     def open_file(self):
         """missing docstring"""
-        file_name = askopenfilename(initialdir="~/Desktop/leaves-ui/img", title="Choose an image file")
-        self.file_image = get_tk_image(file_name)
+        self.image_file = askopenfilename(initialdir="~/Desktop/leaves-ui/img",
+                                          title="Choose an image file")
+
+        im_width = int(self.tab_frame.winfo_width() * 0.8)
+        im_height = int(self.tab_frame.winfo_height() * 0.8)
+        self.image_file = ImageTk.PhotoImage(
+            Image.open(self.image_file).resize((im_width, im_height)))
+
         self.original_image.destroy()
-        self.original_image = ttk.Label(self.original_tab, image=self.file_image)
+        self.original_image = ttk.Label(self.original_tab,
+                                        image=self.image_file)
         self.original_image.pack()
-
-# HELPER FUNCTIONS
-
-def get_tk_image(filename):
-    """missing docstring"""
-    return ImageTk.PhotoImage(Image.open(filename))
 
 # RUN THE APP
 BaseApp()
