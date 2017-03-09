@@ -9,67 +9,71 @@ class BaseApp():
     """missing docstring"""
     def __init__(self):
         # BASIC
-        root = tk.Tk()
-        root.title("Leaves UI")
-        root.geometry("1000x700")
-        frame = ttk.Frame(root, width=1000, height=700)
-        frame.pack(side="top", fill="both", expand=True)
+        self.root = tk.Tk()
+        self.root.title("Leaves UI")
+        self.root.geometry("1000x700")
+        self.frame = ttk.Frame(self.root, width=1000, height=700)
+        self.frame.pack(side="top", fill="both", expand=True)
 
         # MENUBAR
-        menubar = tk.Menu(root)
-        menu = dict()
-        menubar = menubar
-        menu_file = tk.Menu(menubar)
-        menubar.add_cascade(menu=menu_file, label="Datei", underline=0)
-        menu_file.add_command(label="Oeffnen...", command=open_file, underline=0)
-        menu_file.add_command(label="Beenden", command=quit, underline=1)
-        root.config(menu=menubar)
-        menu["menubar"] = menubar
-        menu["Datei"] = menu_file
+        self.menubar = tk.Menu(self.root)
+        self.menu = dict()
+        # self.menubar = menubar
+        self.menu_file = tk.Menu(self.menubar)
+        self.menubar.add_cascade(menu=self.menu_file, label="Datei", underline=0)
+        self.menu_file.add_command(label="Oeffnen...", command=self.open_file, underline=0)
+        self.menu_file.add_command(label="Beenden", command=quit, underline=1)
+        self.root.config(menu=self.menubar)
+        self.menu["menubar"] = self.menubar
+        self.menu["Datei"] = self.menu_file
 
         # MAIN FRAMES
-        menu_frame = ttk.Frame(frame, relief="ridge", borderwidth=2)
-        tab_frame = ttk.Frame(frame, relief="ridge", borderwidth=2)
-        info_frame = ttk.Frame(tab_frame, relief="ridge", borderwidth=2)
+        self.menu_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
+        self.tab_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
+        self.info_frame = ttk.Frame(self.tab_frame, relief="ridge", borderwidth=2)
 
         # PACKING THE MAIN FRAMES
-        menu_frame.pack(side="left", fill="both", expand=False, padx=5, pady=5)
-        tab_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
-        info_frame.pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
+        self.menu_frame.pack(side="left", fill="both", expand=False, padx=5, pady=5)
+        self.tab_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
+        self.info_frame.pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
 
         # ADDING FRAME LABELS
-        ttk.Label(info_frame, text="info frame").pack()
-        ttk.Label(menu_frame, text="menu frame").pack()
+        ttk.Label(self.info_frame, text="info frame").pack()
+        ttk.Label(self.menu_frame, text="menu frame").pack()
 
         # TAB FRAME CONTENT
-        image_tabs = ttk.Notebook(tab_frame)
-        original_tab = tk.Frame(image_tabs)
-        segmented_tab = tk.Frame(image_tabs)
-        labelled_tab = tk.Frame(image_tabs)
-        image_tabs.add(original_tab, text="Original")
-        image_tabs.add(segmented_tab, text="Segmented")
-        image_tabs.add(labelled_tab, text="Labelled")
-        image_tabs.pack()
+        self.image_tabs = ttk.Notebook(self.tab_frame)
+        self.original_tab = tk.Frame(self.image_tabs)
+        self.segmented_tab = tk.Frame(self.image_tabs)
+        self.labelled_tab = tk.Frame(self.image_tabs)
+        self.image_tabs.add(self.original_tab, text="Original")
+        self.image_tabs.add(self.segmented_tab, text="Segmented")
+        self.image_tabs.add(self.labelled_tab, text="Labelled")
+        self.image_tabs.pack()
+
+        # DEFAULT VALUES
+
+        # initial image
+        self.file_image = get_tk_image("/Users/totz/Desktop/leaves-ui/img/init.jpg")
+        self.original_image = ttk.Label(self.original_tab, image=self.file_image)
+        self.original_image.pack()
 
         # RUN WHEN INSTANCE CREATED
-        root.mainloop()
+        self.root.mainloop()
 
-        # put the loaded image into a tab
-        # Label(self.tabFrame.imageTabs.originalTab, image=file_image).pack()
+    def open_file(self):
+        """missing docstring"""
+        file_name = askopenfilename(initialdir="~/Desktop/leaves-ui/img", title="Choose an image file")
+        self.file_image = get_tk_image(file_name)
+        self.original_image.destroy()
+        self.original_image = ttk.Label(self.original_tab, image=self.file_image)
+        self.original_image.pack()
 
 # HELPER FUNCTIONS
 
 def get_tk_image(filename):
     """missing docstring"""
     return ImageTk.PhotoImage(Image.open(filename))
-
-def open_file():
-    """missing docstring"""
-    file_name = askopenfilename(initialdir="~", title="Choose an image file")
-    file_image = get_tk_image(file_name)
-
-    print(file_name)
-    return file_image
 
 # RUN THE APP
 BaseApp()
