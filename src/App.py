@@ -96,8 +96,14 @@ class BaseApp():
             self.image_file = ImageTk.PhotoImage(Image.open(image_path))
 
         self.original_image.destroy()
+        self.segmented_image.destroy()
+        self.labelled_image.destroy()
         self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
+        self.segmented_image = ttk.Label(self.segmented_tab, image=self.image_file)
+        self.segmented_image.pack()
+        self.labelled_image = ttk.Label(self.labelled_tab, image=self.image_file)
+        self.labelled_image.pack()
 
 # RUN THE APP
 BaseApp()
