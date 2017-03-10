@@ -53,11 +53,17 @@ class BaseApp():
 
         # DEFAULT VALUES
 
-        # initial image
+        # initial images
         self.image_file = ImageTk.PhotoImage(
             Image.open("/Users/totz/Desktop/leaves-ui/img/init.jpg"))
         self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
+
+        self.segmented_image = ttk.Label(self.segmented_tab, image=self.image_file)
+        self.segmented_image.pack()
+
+        self.labelled_image = ttk.Label(self.labelled_tab, image=self.image_file)
+        self.labelled_image.pack()
 
         # RUN WHEN INSTANCE CREATED
         self.root.mainloop()
