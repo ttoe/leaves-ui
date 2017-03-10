@@ -66,17 +66,31 @@ class BaseApp():
 
     def open_file(self):
         """missing docstring"""
-        self.image_file = askopenfilename(initialdir="~/Desktop/leaves-ui/img",
-                                          title="Choose an image file")
+        image_path = askopenfilename(initialdir="~/Desktop/leaves-ui/img",
+                                     title="Choose an image file")
 
-        im_width = int(self.tab_frame.winfo_width() * 0.8)
-        im_height = int(self.tab_frame.winfo_height() * 0.8)
-        self.image_file = ImageTk.PhotoImage(
-            Image.open(self.image_file).resize((im_width, im_height)))
+        image = Image.open(image_path)
+
+        im_width, im_height = image.size
+        frame_width = int(self.tab_frame.winfo_width() * 0.9)
+        frame_height = int(self.tab_frame.winfo_height() * 0.9)
+
+        if (im_width > frame_width) or (im_height > frame_height):
+
+            wh_ratio = im_width / im_height
+            new_width, new_height = frame_width, frame_height
+
+            if wh_ratio > 1:
+                new_height = int((new_width / im_width) * im_height)
+            else:
+                new_width = int((new_height / im_height) * im_width)
+            self.image_file = ImageTk.PhotoImage(
+                Image.open(image_path).resize((new_width, new_height)))
+        else:
+            self.image_file = ImageTk.PhotoImage(Image.open(image_path))
 
         self.original_image.destroy()
-        self.original_image = ttk.Label(self.original_tab,
-                                        image=self.image_file)
+        self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
 
 # RUN THE APP
