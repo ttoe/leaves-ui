@@ -5,6 +5,8 @@ import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 
+# import img_utils as iu
+
 class BaseApp():
     """missing docstring"""
     def __init__(self):
@@ -55,7 +57,7 @@ class BaseApp():
 
         # initial images
         self.image_file = ImageTk.PhotoImage(
-            Image.open("/Users/totz/Desktop/leaves-ui/img/init.jpg"))
+            Image.open("/home/totz/Dropbox/leaves-ui/img/init.jpg"))
         self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
 
@@ -72,7 +74,7 @@ class BaseApp():
 
     def open_file(self):
         """missing docstring"""
-        image_path = askopenfilename(initialdir="~/Desktop/leaves-ui/img",
+        image_path = askopenfilename(initialdir="/home/totz/Dropbox/leaves-ui/img",
                                      title="Choose an image file")
 
         image = Image.open(image_path)
@@ -98,10 +100,13 @@ class BaseApp():
         self.original_image.destroy()
         self.segmented_image.destroy()
         self.labelled_image.destroy()
+
         self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
+
         self.segmented_image = ttk.Label(self.segmented_tab, image=self.image_file)
         self.segmented_image.pack()
+
         self.labelled_image = ttk.Label(self.labelled_tab, image=self.image_file)
         self.labelled_image.pack()
 
