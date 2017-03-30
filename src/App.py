@@ -1,11 +1,15 @@
+#!/usr/bin/env python
+
 """missing docstring"""
 
 import tkinter as tk
 import tkinter.ttk as ttk
+import skimage.io as io
 from tkinter.filedialog import askopenfilename
+import numpy as np
 from PIL import ImageTk, Image
 
-# import img_utils as iu
+import img_utils as iu
 
 class BaseApp():
     """missing docstring"""
@@ -77,37 +81,46 @@ class BaseApp():
         image_path = askopenfilename(initialdir="/home/totz/Dropbox/leaves-ui/img",
                                      title="Choose an image file")
 
-        image = Image.open(image_path)
+        original_image = io.imread(image_path)
+        segmented_image = iu.original_to_segmented(original_image)
+        labelled_image = iu.segmented_to_labelled(segmented_image)
 
-        im_width, im_height = image.size
+        pil_original_image = Image.fromarray(original_image)
+        pil_segmented_image = Image.fromarray(segmented_image)
+        pil_labelled_image = Image.fromarray(labelled_image)
+
+        im_width, im_height = pil_original_image.size
         frame_width = int(self.tab_frame.winfo_width() * 0.9)
         frame_height = int(self.tab_frame.winfo_height() * 0.9)
 
+        # if the image is larger than it's containing frame it's rescaled
+        wh_ratio = im_width / im_height
+        new_width, new_height = frame_width, frame_height
         if (im_width > frame_width) or (im_height > frame_height):
-
-            wh_ratio = im_width / im_height
-            new_width, new_height = frame_width, frame_height
-
             if wh_ratio > 1:
                 new_height = int((new_width / im_width) * im_height)
             else:
                 new_width = int((new_height / im_height) * im_width)
-            self.image_file = ImageTk.PhotoImage(
-                Image.open(image_path).resize((new_width, new_height)))
-        else:
-            self.image_file = ImageTk.PhotoImage(Image.open(image_path))
+
+        self.original_image_file = ImageTk.PhotoImage(pil_original_image.resize((new_width, new_height)))
+        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize((new_width, new_height)))
+        self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image.resize((new_width, new_height)))
+#        else:
+#            self.original_image_file = ImageTk.PhotoImage(pil_original_image)
+#            self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
+#            self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image)
 
         self.original_image.destroy()
         self.segmented_image.destroy()
         self.labelled_image.destroy()
 
-        self.original_image = ttk.Label(self.original_tab, image=self.image_file)
+        self.original_image = ttk.Label(self.original_tab, image=self.orignal_image_file)
         self.original_image.pack()
-
-        self.segmented_image = ttk.Label(self.segmented_tab, image=self.image_file)
+        
+        self.segmented_image = ttk.Label(self.segmented_tab, image=self.segmented_image_file)
         self.segmented_image.pack()
 
-        self.labelled_image = ttk.Label(self.labelled_tab, image=self.image_file)
+        self.labelled_image = ttk.Label(self.labelled_tab, image=self.labelled_image_file)
         self.labelled_image.pack()
 
 # RUN THE APP
