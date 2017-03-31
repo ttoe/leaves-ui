@@ -82,12 +82,14 @@ class BaseApp():
                                      title="Choose an image file")
 
         original_image = io.imread(image_path)
-        segmented_image = iu.original_to_segmented(original_image)
-        labelled_image = iu.segmented_to_labelled(segmented_image)
+        segmented_image = iu.original_to_segmented(image_path)
+        #labelled_image = iu.segmented_to_labelled(segmented_image)
+        labelled_image = segmented_image
 
-        pil_original_image = Image.fromarray(original_image)
-        pil_segmented_image = Image.fromarray(segmented_image)
-        pil_labelled_image = Image.fromarray(labelled_image)
+        # segmented_image = np.array([segmented_image, segmented_image, segmented_image])
+        pil_original_image = Image.fromarray(original_image, 'RGB')
+        pil_segmented_image = Image.fromarray(segmented_image, 'L')
+        pil_labelled_image = Image.fromarray(labelled_image, 'L')
 
         im_width, im_height = pil_original_image.size
         frame_width = int(self.tab_frame.winfo_width() * 0.9)
@@ -95,20 +97,20 @@ class BaseApp():
 
         # if the image is larger than it's containing frame it's rescaled
         wh_ratio = im_width / im_height
-        new_width, new_height = frame_width, frame_height
+        # new_width, new_height = frame_width, frame_height
         if (im_width > frame_width) or (im_height > frame_height):
             if wh_ratio > 1:
                 new_height = int((new_width / im_width) * im_height)
             else:
                 new_width = int((new_height / im_height) * im_width)
 
-        self.original_image_file = ImageTk.PhotoImage(pil_original_image.resize((new_width, new_height)))
-        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize((new_width, new_height)))
-        self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image.resize((new_width, new_height)))
-#        else:
-#            self.original_image_file = ImageTk.PhotoImage(pil_original_image)
-#            self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
-#            self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image)
+            self.original_image_file = ImageTk.PhotoImage(pil_original_image.resize((new_width, new_height)))
+            self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize((new_width, new_height)))
+            self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image.resize((new_width, new_height)))
+        else:
+            self.original_image_file = ImageTk.PhotoImage(pil_original_image)
+            self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
+            self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image)
 
         self.original_image.destroy()
         self.segmented_image.destroy()

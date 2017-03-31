@@ -24,20 +24,21 @@ def filter_regions_by_props(regions):
 
 
 # original_to_segmented :: String -> Img
-def original_to_segmented(np_image_array):
+def original_to_segmented(file_path):
     """missing docstring"""
 
     # reading data
-    # img = imread(file_path)
+    img = imread(file_path)
 
     # cropping out the interesting part and just using green channel
     # leaf_grey = img[:600, :600, 1]
+    greyscale_image = img[:600, :600, 1]
 
     # segmenting
-    global_thresh = threshold_otsu(np_image_array)
+    global_thresh = threshold_otsu(greyscale_image)
 
     # filling holes
-    bw_closed = binary_closing(np.invert(np_image_array > global_thresh))
+    bw_closed = binary_closing(np.invert(greyscale_image > global_thresh))
 
     # removing small objects outside of leaf
     bw_closed_rem = remove_small_objects(bw_closed, min_size=128, connectivity=2)
