@@ -2,6 +2,9 @@
 
 """missing docstring"""
 
+import matplotlib
+matplotlib.use("TkAgg")
+
 import tkinter as tk
 import tkinter.ttk as ttk
 import skimage.io as io
@@ -61,7 +64,7 @@ class BaseApp():
 
         # initial images
         self.image_file = ImageTk.PhotoImage(
-            Image.open("/home/totz/Dropbox/leaves-ui/img/init.jpg"))
+            Image.open("/Users/totz/Dropbox/leaves-ui/img/init.jpg"))
         self.original_image = ttk.Label(self.original_tab, image=self.image_file)
         self.original_image.pack()
 
@@ -78,8 +81,7 @@ class BaseApp():
 
     def open_file(self):
         """missing docstring"""
-        image_path = askopenfilename(initialdir="/home/totz/Dropbox/leaves-ui/img",
-                                     title="Choose an image file")
+        image_path = askopenfilename(title="Choose an image file")
 
         original_image = io.imread(image_path)
         segmented_image = iu.original_to_segmented(image_path)
@@ -97,7 +99,7 @@ class BaseApp():
 
         # if the image is larger than it's containing frame it's rescaled
         wh_ratio = im_width / im_height
-        # new_width, new_height = frame_width, frame_height
+        new_width, new_height = frame_width, frame_height
         if (im_width > frame_width) or (im_height > frame_height):
             if wh_ratio > 1:
                 new_height = int((new_width / im_width) * im_height)
@@ -116,7 +118,7 @@ class BaseApp():
         self.segmented_image.destroy()
         self.labelled_image.destroy()
 
-        self.original_image = ttk.Label(self.original_tab, image=self.orignal_image_file)
+        self.original_image = ttk.Label(self.original_tab, image=self.original_image_file)
         self.original_image.pack()
         
         self.segmented_image = ttk.Label(self.segmented_tab, image=self.segmented_image_file)
