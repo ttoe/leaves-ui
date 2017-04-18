@@ -2,18 +2,21 @@
 
 """missing docstring"""
 
+# Matplotlib import is a workaround for a c++ library problem
 import matplotlib
 matplotlib.use("TkAgg")
 
-import tkinter as tk
+import tkinter     as tk
 import tkinter.ttk as ttk
-import skimage.io as io
-from tkinter.filedialog import askopenfilename
-import numpy as np
-from PIL import ImageTk, Image
+import skimage.io  as io
+import numpy       as np
+from   tkinter.filedialog import askopenfilename
+from   PIL                import ImageTk, Image
 
+# import custom functions
 import img_utils as iu
 
+# App
 class BaseApp():
     """missing docstring"""
     def __init__(self):
@@ -30,7 +33,7 @@ class BaseApp():
         # self.menubar = menubar
         self.menu_file = tk.Menu(self.menubar)
         self.menubar.add_cascade(menu=self.menu_file, label="Datei", underline=0)
-        self.menu_file.add_command(label="Oeffnen...", command=self.open_file, underline=0)
+        self.menu_file.add_command(label="Öffnen...", command=self.open_file, underline=0)
         self.menu_file.add_command(label="Beenden", command=quit, underline=1)
         self.root.config(menu=self.menubar)
         self.menu["menubar"] = self.menubar
@@ -81,15 +84,15 @@ class BaseApp():
 
     def open_file(self):
         """missing docstring"""
-        image_path = askopenfilename(title="Choose an image file")
-
+        image_path = askopenfilename(title="Choose an image file",
+                                     initialdir="/Users/totz/Dropbox/leaves-ui/img/leaves_images")
+        
         original_image = io.imread(image_path)
         segmented_image = iu.original_to_segmented(image_path)
-        #labelled_image = iu.segmented_to_labelled(segmented_image)
-        labelled_image = segmented_image
+        labelled_image = iu.segmented_to_labelled(segmented_image)
+        # labelled_image = segmented_image # temp
 
-        # segmented_image = np.array([segmented_image, segmented_image, segmented_image])
-        pil_original_image = Image.fromarray(original_image, 'RGB')
+        pil_original_image = Image.open(image_path) #Image.fromarray(original_image)
         pil_segmented_image = Image.fromarray(segmented_image, 'L')
         pil_labelled_image = Image.fromarray(labelled_image, 'L')
 

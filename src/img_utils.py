@@ -1,14 +1,15 @@
 """missing docstring"""
 
-from   skimage.filters    import threshold_otsu
-from   skimage.io         import imread
-from   skimage.morphology import binary_closing, remove_small_objects
-from   skimage.measure    import label, regionprops
 import numpy              as np
 import pandas             as pd
+from   PIL                import Image
+from   skimage.filters    import threshold_otsu
+# from   skimage.io         import imread
+from   skimage.morphology import binary_closing, remove_small_objects
+from   skimage.measure    import label, regionprops
+from   skimage.util       import img_as_ubyte, img_as_bool
 
 
-# region_filter :: Region -> Boolean
 def region_filter(region):
     """missing docstring"""
     # main concern here is that the key regions are included
@@ -17,42 +18,38 @@ def region_filter(region):
     return region.extent <= 0.8
 
 
-# filter_regions_by_props :: [Region] -> [Region]
 def filter_regions_by_props(regions):
     """missing docstring"""
     return list(filter(region_filter, regions))
 
 
-# original_to_segmented :: String -> Img
-def original_to_segmented(file_path):
+def original_to_segmented(image_path):
     """missing docstring"""
 
     # reading data
-    img = imread(file_path)
-
+    greyscale_img = Image.open(image_path).convert("L")
+    greyscale_array = np.array(greyscale_img)
+    
     # cropping out the interesting part and just using green channel
-    # leaf_grey = img[:600, :600, 1]
-    greyscale_image = img[:600, :600, 1]
+    greyscale_cropped_image = greyscale_array[:600, :600]
 
     # segmenting
-    global_thresh = threshold_otsu(greyscale_image)
+    global_threshold = threshold_otsu(greyscale_cropped_image)
 
     # filling holes
-    bw_closed = binary_closing(np.invert(greyscale_image > global_thresh))
+    greyscale_closed = binary_closing(np.invert(greyscale_cropped_image > global_threshold))
 
     # removing small objects outside of leaf
-    bw_closed_rem = remove_small_objects(bw_closed, min_size=128, connectivity=2)
+    greyscale_closed_rem = remove_small_objects(greyscale_closed, min_size=128, connectivity=2)
 
-    return bw_closed_rem
+    return img_as_ubyte(greyscale_closed_rem)
 
 
-# segmented_to_labelled :: Image -> Image
 def segmented_to_labelled(img):
     """missing docstring"""
-    return label(img)
+    return label(img_as_bool(img))
 
 
-# labelled_to_filtered :: Image -> Image
 def labelled_to_filtered(img): # , species_name
     """missing docstring"""
     # getting region's properties and filtering by extent
