@@ -87,17 +87,17 @@ class BaseApp():
         image_path = askopenfilename(title="Choose an image file",
                                      initialdir="/Users/totz/Dropbox/leaves-ui/img/leaves_images")
         
-        original_image = io.imread(image_path)
-        segmented_image = iu.original_to_segmented(image_path)
-        labelled_image = iu.segmented_to_labelled(segmented_image)
-        # labelled_image = segmented_image # temp
+        processed_images = iu.processing_pipe(image_path)
+        original_image   = processed_images["original_img"]
+        segmented_image  = processed_images["segmented_ubyte_img_bw"]
+        labelled_image   = processed_images["labelled_ubyte_img_rbg"]
 
-        pil_original_image = Image.open(image_path) #Image.fromarray(original_image)
-        pil_segmented_image = Image.fromarray(segmented_image, 'L')
-        pil_labelled_image = Image.fromarray(labelled_image, 'L')
+        pil_original_image  = Image.fromarray(original_image, "RGB")
+        pil_segmented_image = Image.fromarray(segmented_image)
+        pil_labelled_image  = Image.fromarray(labelled_image, "RGB")
 
         im_width, im_height = pil_original_image.size
-        frame_width = int(self.tab_frame.winfo_width() * 0.9)
+        frame_width  = int(self.tab_frame.winfo_width() * 0.9)
         frame_height = int(self.tab_frame.winfo_height() * 0.9)
 
         # if the image is larger than it's containing frame it's rescaled
@@ -109,13 +109,13 @@ class BaseApp():
             else:
                 new_width = int((new_height / im_height) * im_width)
 
-            self.original_image_file = ImageTk.PhotoImage(pil_original_image.resize((new_width, new_height)))
+            self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize((new_width, new_height)))
             self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize((new_width, new_height)))
-            self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image.resize((new_width, new_height)))
+            self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize((new_width, new_height)))
         else:
-            self.original_image_file = ImageTk.PhotoImage(pil_original_image)
+            self.original_image_file  = ImageTk.PhotoImage(pil_original_image)
             self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
-            self.labelled_image_file = ImageTk.PhotoImage(pil_labelled_image)
+            self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image)
 
         self.original_image.destroy()
         self.segmented_image.destroy()
