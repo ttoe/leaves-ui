@@ -27,37 +27,23 @@ class BaseApp():
         self.frame = ttk.Frame(self.root, width=1000, height=700)
         self.frame.pack(side="top", fill="both", expand=True)
 
-        # MENUBAR
-        self.menubar = tk.Menu(self.root)
-        self.menu = dict()
-        # self.menubar = menubar
-        self.menu_file = tk.Menu(self.menubar)
-        self.menubar.add_cascade(menu=self.menu_file, label="File")
-        self.menu_file.add_command(label="Open", command=self.open_file)
-        self.menu_file.add_command(label="Quit", command=quit)
-        self.root.config(menu=self.menubar)
-        self.menu["menubar"] = self.menubar
-        self.menu["Datei"] = self.menu_file
-
         # MAIN FRAMES
         self.menu_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
         self.tab_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
         self.info_frame = ttk.Frame(self.tab_frame, relief="ridge", borderwidth=2)
 
-        # PACKING THE MAIN FRAMES
+        # MAIN FRAMES - PACKING
         self.menu_frame.pack(side="left", fill="both", expand=False, padx=5, pady=5)
         self.tab_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
         self.info_frame.pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
 
-        # ADDING FRAME LABELS
+        # ADDING FRAME LABELS /// temp ///
         ttk.Label(self.info_frame, text="info frame").pack()
         ttk.Label(self.menu_frame, text="menu frame").pack()
 
         # MENU FRAME CONTENT
-        self.open_button = ttk.Button(self.menu_frame, text="Open", command=self.open_file)
-        self.open_button.pack()
-        self.quit_button = ttk.Button(self.menu_frame, text="Quit", command=quit)
-        self.quit_button.pack()
+        open_button = ttk.Button(self.menu_frame, text="Open", command=self.open_file).pack()
+        quit_button = ttk.Button(self.menu_frame, text="Quit", command=quit).pack()
 
         # TAB FRAME CONTENT
         self.image_tabs = ttk.Notebook(self.tab_frame)
@@ -71,17 +57,10 @@ class BaseApp():
 
         # DEFAULT VALUES
 
-        # initial images
-        self.image_file = ImageTk.PhotoImage(
-            Image.open("/Users/totz/Dropbox/leaves-ui/img/init.jpg"))
-        self.original_image = ttk.Label(self.original_tab, image=self.image_file)
-        self.original_image.pack()
-
-        self.segmented_image = ttk.Label(self.segmented_tab, image=self.image_file)
-        self.segmented_image.pack()
-
-        self.labelled_image = ttk.Label(self.labelled_tab, image=self.image_file)
-        self.labelled_image.pack()
+        # IMAGE LABELS - to be filled later
+        self.original_image = ttk.Label(self.original_tab)
+        self.segmented_image = ttk.Label(self.segmented_tab)
+        self.labelled_image = ttk.Label(self.labelled_tab)
 
         # RUN WHEN INSTANCE CREATED
         self.root.mainloop()
@@ -90,8 +69,7 @@ class BaseApp():
 
     def open_file(self):
         """missing docstring"""
-        image_path = askopenfilename(title="Choose an image file")#,
-                                     # initialdir="/Users/totz/Dropbox/leaves-ui/img/leaves_images")
+        image_path = askopenfilename(title="Choose an image file")
         
         processed_images    = iu.processing_pipe(image_path)
 
@@ -125,15 +103,14 @@ class BaseApp():
             self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image)
 
         self.original_image.destroy()
-        self.segmented_image.destroy()
-        self.labelled_image.destroy()
-
         self.original_image = ttk.Label(self.original_tab, image=self.original_image_file)
         self.original_image.pack()
         
+        self.segmented_image.destroy()
         self.segmented_image = ttk.Label(self.segmented_tab, image=self.segmented_image_file)
         self.segmented_image.pack()
 
+        self.labelled_image.destroy()
         self.labelled_image = ttk.Label(self.labelled_tab, image=self.labelled_image_file)
         self.labelled_image.pack()
 

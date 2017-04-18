@@ -11,17 +11,17 @@ from   skimage.color      import label2rgb
 from   skimage.util       import img_as_ubyte#, img_as_bool
 
 
-def region_filter(region):
-    """missing docstring"""
-    # main concern here is that the key regions are included
-    # those are usually rectangular
-    # therefore extent is the most reliable metric to filter by
-    return region.extent <= 0.8
+# def region_filter(region):
+#     """missing docstring"""
+#     # main concern here is that the key regions are included
+#     # those are usually rectangular
+#     # therefore extent is the most reliable metric to filter by
+#     return region.extent <= 0.8
 
 
-def filter_regions_by_props(regions):
+def filter_regions_by_extent(regions):
     """missing docstring"""
-    return list(filter(region_filter, regions))
+    return list(filter(lambda r: r.extent <= 0.8, regions))
 
 
 def processing_pipe(image_path):
@@ -60,7 +60,7 @@ def labelled_to_filtered(img):
     """missing docstring"""
     # getting region's properties and filtering by extent
     regions_properties = regionprops(img, cache=True)
-    filtered_regions = filter_regions_by_props(regions_properties)
+    filtered_regions = filter_regions_by_extent(regions_properties)
 
     # creating dataframe
     dataframe = pd.DataFrame(columns=["eccentricity", #"species",
