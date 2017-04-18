@@ -2,13 +2,13 @@
 
 import numpy              as np
 import pandas             as pd
-from   PIL                import Image
+# from   PIL                import Image
 from   skimage.filters    import threshold_otsu
-from   skimage.io         import imread, imsave
+from   skimage.io         import imread#, imsave
 from   skimage.morphology import binary_closing, remove_small_objects
 from   skimage.measure    import label, regionprops
 from   skimage.color      import label2rgb
-from   skimage.util       import img_as_ubyte, img_as_bool
+from   skimage.util       import img_as_ubyte#, img_as_bool
 
 
 def region_filter(region):
@@ -46,7 +46,7 @@ def processing_pipe(image_path):
 
     # label the binary image and combine with rgb representation
     labelled_image = label(greyscale_closed_rem)
-    image_label_overlay = label2rgb(labelled_image, image=img)
+    image_label_overlay = label2rgb(labelled_image, image=greyscale_cropped_image)
 
     # returning images after converting segmented image back to 8 bit format & labelling it
     images = { "original_img": img,
@@ -54,11 +54,6 @@ def processing_pipe(image_path):
                "labelled_ubyte_img_rbg": img_as_ubyte(image_label_overlay) }
 
     return images
-
-
-# def segmented_to_labelled(img):
-#     """missing docstring"""
-#     return label(img_as_bool(img))
 
 
 def labelled_to_filtered(img):

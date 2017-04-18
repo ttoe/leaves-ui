@@ -32,9 +32,9 @@ class BaseApp():
         self.menu = dict()
         # self.menubar = menubar
         self.menu_file = tk.Menu(self.menubar)
-        self.menubar.add_cascade(menu=self.menu_file, label="Datei", underline=0)
-        self.menu_file.add_command(label="Öffnen...", command=self.open_file, underline=0)
-        self.menu_file.add_command(label="Beenden", command=quit, underline=1)
+        self.menubar.add_cascade(menu=self.menu_file, label="File")
+        self.menu_file.add_command(label="Open", command=self.open_file)
+        self.menu_file.add_command(label="Quit", command=quit)
         self.root.config(menu=self.menubar)
         self.menu["menubar"] = self.menubar
         self.menu["Datei"] = self.menu_file
@@ -52,6 +52,12 @@ class BaseApp():
         # ADDING FRAME LABELS
         ttk.Label(self.info_frame, text="info frame").pack()
         ttk.Label(self.menu_frame, text="menu frame").pack()
+
+        # MENU FRAME CONTENT
+        self.open_button = ttk.Button(self.menu_frame, text="Open", command=self.open_file)
+        self.open_button.pack()
+        self.quit_button = ttk.Button(self.menu_frame, text="Quit", command=quit)
+        self.quit_button.pack()
 
         # TAB FRAME CONTENT
         self.image_tabs = ttk.Notebook(self.tab_frame)
@@ -84,13 +90,14 @@ class BaseApp():
 
     def open_file(self):
         """missing docstring"""
-        image_path = askopenfilename(title="Choose an image file",
-                                     initialdir="/Users/totz/Dropbox/leaves-ui/img/leaves_images")
+        image_path = askopenfilename(title="Choose an image file")#,
+                                     # initialdir="/Users/totz/Dropbox/leaves-ui/img/leaves_images")
         
-        processed_images = iu.processing_pipe(image_path)
-        original_image   = processed_images["original_img"]
-        segmented_image  = processed_images["segmented_ubyte_img_bw"]
-        labelled_image   = processed_images["labelled_ubyte_img_rbg"]
+        processed_images    = iu.processing_pipe(image_path)
+
+        original_image      = processed_images["original_img"]
+        segmented_image     = processed_images["segmented_ubyte_img_bw"]
+        labelled_image      = processed_images["labelled_ubyte_img_rbg"]
 
         pil_original_image  = Image.fromarray(original_image, "RGB")
         pil_segmented_image = Image.fromarray(segmented_image)
