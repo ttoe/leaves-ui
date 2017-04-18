@@ -24,7 +24,7 @@ class BaseApp():
         self.root = tk.Tk()
         self.root.title("Leaves UI")
         self.root.geometry("1000x700")
-        self.root.attributes('-fullscreen', True)
+        self.root.attributes("-fullscreen", True)
         self.frame = ttk.Frame(self.root, width=1000, height=700)
         self.frame.pack(side="top", fill="both", expand=True)
 
@@ -80,20 +80,7 @@ class BaseApp():
         pil_segmented_image = Image.fromarray(segmented_image)
         pil_labelled_image  = Image.fromarray(labelled_image, "RGB")
 
-        im_width, im_height = pil_original_image.size
-        frame_width  = int(self.tab_frame.winfo_width() * 0.9)
-        frame_height = int(self.tab_frame.winfo_height() * 0.9)
-
-        # if the image is larger than it's containing frame it's rescaled
-        wh_ratio = im_width / im_height
-        new_width, new_height = frame_width, frame_height
-        if (im_width > frame_width) or (im_height > frame_height):
-            if wh_ratio > 1:
-                new_h = int((new_width / im_width) * im_height)
-            else:
-                new_w = int((new_height / im_height) * im_width)
-        size = (new_width, new_height)
-
+        size = self.new_img_size(pil_original_image.size)
         self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize(size))
         self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize(size))
         self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize(size))
@@ -112,9 +99,22 @@ class BaseApp():
         self.labelled_image = ttk.Label(self.labelled_tab, image=self.labelled_image_file)
         self.labelled_image.pack()
 
+    def new_img_size(self, current_size):
+        img_width, img_height = current_size
+        frame_width  = int(self.tab_frame.winfo_width() * 0.9)
+        frame_height = int(self.tab_frame.winfo_height() * 0.9)
 
-    def get_new_img_sizes(width, height):
-        pass
+        # if the image is larger than it's containing frame it's rescaled
+        wh_ratio = img_width / img_height
+        new_width, new_height = frame_width, frame_height
+        if (img_width > frame_width) or (img_height > frame_height):
+            if wh_ratio > 1:
+                new_h = int((new_width / img_width) * img_height)
+            else:
+                new_w = int((new_height / img_height) * img_width)
+
+        return (new_width, new_height)
+
 
 # RUN THE APP
 BaseApp()
