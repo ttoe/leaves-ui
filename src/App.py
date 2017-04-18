@@ -81,6 +81,7 @@ class BaseApp():
         pil_segmented_image = Image.fromarray(segmented_image)
         pil_labelled_image  = Image.fromarray(labelled_image, "RGB")
 
+
         im_width, im_height = pil_original_image.size
         frame_width  = int(self.tab_frame.winfo_width() * 0.9)
         frame_height = int(self.tab_frame.winfo_height() * 0.9)
@@ -90,22 +91,21 @@ class BaseApp():
         new_width, new_height = frame_width, frame_height
         if (im_width > frame_width) or (im_height > frame_height):
             if wh_ratio > 1:
-                new_height = int((new_width / im_width) * im_height)
+                new_h = int((new_width / im_width) * im_height)
             else:
-                new_width = int((new_height / im_height) * im_width)
+                new_w = int((new_height / im_height) * im_width)
+        size = (new_width, new_height)
 
-            self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize((new_width, new_height)))
-            self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize((new_width, new_height)))
-            self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize((new_width, new_height)))
-        else:
-            self.original_image_file  = ImageTk.PhotoImage(pil_original_image)
-            self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
-            self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image)
+        self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize(size))
+        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize(size))
+        self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize(size))
+
+        # DESTROY CURRENT IMAGES AND DISPLAY NEW ONES
 
         self.original_image.destroy()
         self.original_image = ttk.Label(self.original_tab, image=self.original_image_file)
         self.original_image.pack()
-        
+
         self.segmented_image.destroy()
         self.segmented_image = ttk.Label(self.segmented_tab, image=self.segmented_image_file)
         self.segmented_image.pack()
@@ -113,6 +113,10 @@ class BaseApp():
         self.labelled_image.destroy()
         self.labelled_image = ttk.Label(self.labelled_tab, image=self.labelled_image_file)
         self.labelled_image.pack()
+
+
+    def get_new_img_sizes(width, height):
+        pass
 
 # RUN THE APP
 BaseApp()

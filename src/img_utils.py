@@ -11,14 +11,6 @@ from   skimage.color      import label2rgb
 from   skimage.util       import img_as_ubyte#, img_as_bool
 
 
-# def region_filter(region):
-#     """missing docstring"""
-#     # main concern here is that the key regions are included
-#     # those are usually rectangular
-#     # therefore extent is the most reliable metric to filter by
-#     return region.extent <= 0.8
-
-
 def filter_regions_by_extent(regions):
     """missing docstring"""
     return list(filter(lambda r: r.extent <= 0.8, regions))
@@ -28,7 +20,6 @@ def processing_pipe(image_path):
     """missing docstring"""
 
     # reading data, converting to greyscale, converting to numpy array
-    # img = Image.open(image_path)#.convert("L")
     img = imread(image_path)
     greyscale_array = np.array(img)
     
@@ -51,6 +42,7 @@ def processing_pipe(image_path):
     # returning images after converting segmented image back to 8 bit format & labelling it
     images = { "original_img": img,
                "segmented_ubyte_img_bw": img_as_ubyte(greyscale_closed_rem),
+               "labelled_image": labelled_image,
                "labelled_ubyte_img_rbg": img_as_ubyte(image_label_overlay) }
 
     return images
