@@ -24,13 +24,14 @@ class BaseApp():
         self.root = tk.Tk()
         self.root.title("Leaves UI")
         self.root.geometry("1000x700")
+        self.root.attributes('-fullscreen', True)
         self.frame = ttk.Frame(self.root, width=1000, height=700)
         self.frame.pack(side="top", fill="both", expand=True)
 
         # MAIN FRAMES
         self.menu_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
         self.tab_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
-        self.info_frame = ttk.Frame(self.tab_frame, relief="ridge", borderwidth=2)
+        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=2)
 
         # MAIN FRAMES - PACKING
         self.menu_frame.pack(side="left", fill="both", expand=False, padx=5, pady=5)
@@ -38,8 +39,8 @@ class BaseApp():
         self.info_frame.pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
 
         # ADDING FRAME LABELS /// temp ///
-        ttk.Label(self.info_frame, text="info frame").pack()
-        ttk.Label(self.menu_frame, text="menu frame").pack()
+        # ttk.Label(self.info_frame, text="info frame").pack()
+        # ttk.Label(self.menu_frame, text="menu frame").pack()
 
         # MENU FRAME CONTENT
         open_button = ttk.Button(self.menu_frame, text="Open", command=self.open_file).pack()
@@ -54,8 +55,6 @@ class BaseApp():
         self.image_tabs.add(self.segmented_tab, text="Segmented")
         self.image_tabs.add(self.labelled_tab, text="Labelled")
         self.image_tabs.pack()
-
-        # DEFAULT VALUES
 
         # IMAGE LABELS - to be filled later
         self.original_image = ttk.Label(self.original_tab)
@@ -80,7 +79,6 @@ class BaseApp():
         pil_original_image  = Image.fromarray(original_image, "RGB")
         pil_segmented_image = Image.fromarray(segmented_image)
         pil_labelled_image  = Image.fromarray(labelled_image, "RGB")
-
 
         im_width, im_height = pil_original_image.size
         frame_width  = int(self.tab_frame.winfo_width() * 0.9)
