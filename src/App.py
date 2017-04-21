@@ -38,10 +38,6 @@ class BaseApp():
         self.tab_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
         self.info_frame.pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
 
-        # ADDING FRAME LABELS /// temp ///
-        # ttk.Label(self.info_frame, text="info frame").pack()
-        # ttk.Label(self.menu_frame, text="menu frame").pack()
-
         # MENU FRAME CONTENT
         open_button = ttk.Button(self.menu_frame, text="Open", command=self.open_file).pack()
         quit_button = ttk.Button(self.menu_frame, text="Quit", command=quit).pack()
@@ -49,15 +45,18 @@ class BaseApp():
         # TAB FRAME CONTENT
         self.image_tabs = ttk.Notebook(self.tab_frame)
         self.original_tab = tk.Frame(self.image_tabs)
+        self.greyscale_tab = tk.Frame(self.image_tabs)
         self.segmented_tab = tk.Frame(self.image_tabs)
         self.labelled_tab = tk.Frame(self.image_tabs)
         self.image_tabs.add(self.original_tab, text="Original")
+        self.image_tabs.add(self.greyscale_tab, text="Greyscale")
         self.image_tabs.add(self.segmented_tab, text="Segmented")
         self.image_tabs.add(self.labelled_tab, text="Labelled")
         self.image_tabs.pack()
 
         # IMAGE LABELS - to be filled later
         self.original_image = ttk.Label(self.original_tab)
+        self.greyscale_image = ttk.Label(self.original_tab)
         self.segmented_image = ttk.Label(self.segmented_tab)
         self.labelled_image = ttk.Label(self.labelled_tab)
 
@@ -73,23 +72,31 @@ class BaseApp():
         processed_images    = iu.processing_pipe(image_path)
 
         original_image      = processed_images["original_img"]
+        greyscale_image     = processed_images["greyscale_img"]
         segmented_image     = processed_images["segmented_ubyte_img_bw"]
         labelled_image      = processed_images["labelled_ubyte_img_rbg"]
 
         pil_original_image  = Image.fromarray(original_image, "RGB")
+        pil_greyscale_image  = Image.fromarray(greyscale_image, "L")
         pil_segmented_image = Image.fromarray(segmented_image)
         pil_labelled_image  = Image.fromarray(labelled_image, "RGB")
 
-        size = self.new_img_size(pil_original_image.size)
-        self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize(size))
-        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize(size))
-        self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize(size))
+        new_original_size = self.new_img_size(pil_original_image.size)
+        new_cropped_size = self.new_img_size(pil_greyscale_image.size)
+        self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize(new_original_size))
+        self.greyscale_image_file  = ImageTk.PhotoImage(pil_greyscale_image.resize(new_cropped_size))
+        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize(new_cropped_size))
+        self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize(new_cropped_size))
 
         # DESTROY CURRENT IMAGES AND DISPLAY NEW ONES
 
         self.original_image.destroy()
         self.original_image = ttk.Label(self.original_tab, image=self.original_image_file)
         self.original_image.pack()
+
+        self.greyscale_image.destroy()
+        self.greyscale_image = ttk.Label(self.greyscale_tab, image=self.greyscale_image_file)
+        self.greyscale_image.pack()
 
         self.segmented_image.destroy()
         self.segmented_image = ttk.Label(self.segmented_tab, image=self.segmented_image_file)

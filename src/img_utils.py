@@ -24,7 +24,7 @@ def processing_pipe(image_path):
     greyscale_array = np.array(img)
     
     # cropping out the interesting part & extracting green channel (rgb -> grey)
-    greyscale_cropped_image = greyscale_array[:, :, 1]# [:600, :600, 1]
+    greyscale_cropped_image = greyscale_array[:600, :600, 1]# [:600, :600, 1]
 
     # segmenting using otsu's method
     global_threshold = threshold_otsu(greyscale_cropped_image)
@@ -39,8 +39,12 @@ def processing_pipe(image_path):
     labelled_image = label(greyscale_closed_rem)
     image_label_overlay = label2rgb(labelled_image, image=greyscale_cropped_image)
 
+    # compute region's properties
+    regions_properties = get_regions_props(labelled_image) 
+
     # returning images after converting segmented image back to 8 bit format & labelling it
     images = { "original_img": img,
+               "greyscale_img": greyscale_cropped_image,
                "segmented_ubyte_img_bw": img_as_ubyte(greyscale_closed_rem),
                "labelled_image": labelled_image,
                "labelled_ubyte_img_rbg": img_as_ubyte(image_label_overlay) }
@@ -48,7 +52,7 @@ def processing_pipe(image_path):
     return images
 
 
-def labelled_to_filtered(img):
+def get_regions_props(img):
     """missing docstring"""
     # getting region's properties and filtering by extent
     regions_properties = regionprops(img, cache=True)
@@ -68,5 +72,8 @@ def labelled_to_filtered(img):
         # appending data to dataframe
         dataframe.loc[len(dataframe)+1] = [props.eccentricity, # species_name,
                                            props.extent, props.solidity, roundness]
+        print(dataframe)
+    else:
+        print("More than 1 region remaining!")
 
     return dataframe
