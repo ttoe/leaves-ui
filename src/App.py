@@ -12,6 +12,8 @@ import skimage.io  as io
 import numpy       as np
 from   tkinter.filedialog import askopenfilename
 from   PIL                import ImageTk, Image
+import PIL.Image as pi
+# from   PIL.Image import *
 
 # import custom functions
 import img_utils as iu
@@ -54,7 +56,7 @@ class BaseApp():
         self.image_tabs.add(self.labelled_tab, text="Labelled")
         self.image_tabs.pack()
 
-        # IMAGE LABELS - to be filled later
+        # IMAGE LABELS - filled when loading an image
         self.original_image = ttk.Label(self.original_tab)
         self.greyscale_image = ttk.Label(self.original_tab)
         self.segmented_image = ttk.Label(self.segmented_tab)
@@ -77,16 +79,25 @@ class BaseApp():
         labelled_image      = processed_images["labelled_ubyte_img_rbg"]
 
         pil_original_image  = Image.fromarray(original_image, "RGB")
-        pil_greyscale_image  = Image.fromarray(greyscale_image, "L")
+        pil_greyscale_image = Image.fromarray(greyscale_image, "L")
         pil_segmented_image = Image.fromarray(segmented_image)
         pil_labelled_image  = Image.fromarray(labelled_image, "RGB")
 
-        new_original_size = self.new_img_size(pil_original_image.size)
-        new_cropped_size = self.new_img_size(pil_greyscale_image.size)
-        self.original_image_file  = ImageTk.PhotoImage(pil_original_image.resize(new_original_size))
-        self.greyscale_image_file  = ImageTk.PhotoImage(pil_greyscale_image.resize(new_cropped_size))
-        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image.resize(new_cropped_size))
-        self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image.resize(new_cropped_size))
+        # scaling the images
+        frame_width  = int(self.tab_frame.winfo_width() * 0.9)
+        frame_height = int(self.tab_frame.winfo_height() * 0.9)
+        max_size = (frame_width, frame_height)
+
+        pil_original_image.thumbnail(max_size)
+        pil_greyscale_image.thumbnail(max_size)
+        pil_segmented_image.thumbnail(max_size)
+        pil_labelled_image.thumbnail(max_size)
+
+        # creating displayable images
+        self.original_image_file  = ImageTk.PhotoImage(pil_original_image)
+        self.greyscale_image_file = ImageTk.PhotoImage(pil_greyscale_image)
+        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
+        self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image)
 
         # DESTROY CURRENT IMAGES AND DISPLAY NEW ONES
 

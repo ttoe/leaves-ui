@@ -9,6 +9,7 @@ from   skimage.morphology import binary_closing, remove_small_objects
 from   skimage.measure    import label, regionprops
 from   skimage.color      import label2rgb
 from   skimage.util       import img_as_ubyte#, img_as_bool
+# from   skimage.transform  import rescale
 
 
 def filter_regions_by_extent(regions):
@@ -59,21 +60,19 @@ def get_regions_props(img):
     filtered_regions = filter_regions_by_extent(regions_properties)
 
     # creating dataframe
-    dataframe = pd.DataFrame(columns=["eccentricity", #"species",
-                                      "extent", "solidity", "roundness"])
+    dataframe = pd.DataFrame(columns=["eccentricity", "extent", "solidity", "roundness"])
 
-    if len(filtered_regions) == 1:
-        # getting the props for the only region
-        props = filtered_regions[0]
+    # if len(filtered_regions) == 1:
+    # getting the props for the only region
+    props = filtered_regions[0]
 
-        # manually calculating roundness
-        roundness = 4 * np.pi * props.area / props.perimeter**2
+    # manually calculating roundness
+    roundness = 4 * np.pi * props.area / props.perimeter**2
 
-        # appending data to dataframe
-        dataframe.loc[len(dataframe)+1] = [props.eccentricity, # species_name,
-                                           props.extent, props.solidity, roundness]
-        print(dataframe)
-    else:
-        print("More than 1 region remaining!")
+    # appending data to dataframe
+    dataframe.loc[len(dataframe)+1] = [props.eccentricity, props.extent, props.solidity, roundness]
+    print(dataframe)
+    # else:
+        # print("More than 1 region remaining!")
 
     return dataframe
