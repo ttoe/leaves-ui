@@ -28,18 +28,16 @@ class BaseApp():
         self.root.title("Leaves UI")
         self.root.geometry("1000x700")
         self.root.attributes("-fullscreen", True)
-        #self.frame = ttk.Frame(self.root, width=1000, height=700)
-        #self.frame.pack(side="top", fill="both", expand=True)
 
         # MAIN FRAMES
-        self.menu_frame = ttk.Frame(self.root, relief="ridge", borderwidth=1)
-        self.tab_frame = ttk.Frame(self.root, relief="ridge", borderwidth=1)
-        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=1)
+        self.menu_frame = ttk.Frame(self.root, relief="ridge", borderwidth=2)
+        self.tab_frame = ttk.Frame(self.root, relief="ridge", borderwidth=2)
+        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=0)
 
         # MAIN FRAMES - PACKING
         self.menu_frame.pack(side="left", fill="both", expand=False, padx=1, pady=1)
         self.tab_frame.pack(side="right", fill="both", expand=True, padx=1, pady=1)
-        self.info_frame.pack(side="bottom", fill="x", expand=True, padx=1, pady=1)
+        self.info_frame.pack(side="bottom", fill="x", expand=False, padx=1, pady=1)
 
         # MENU FRAME CONTENT
         ttk.Button(self.menu_frame, text="Open", command=self.open_file).pack(side="left")
@@ -58,9 +56,10 @@ class BaseApp():
         self.image_tabs.pack()
 
         # REGION DATA
-        self.region_data = tkst.ScrolledText(master=self.info_frame, height=15, width=50)
-        self.region_data.pack()#side="bottom", expand=False, fill="x")
-        self.region_data.insert("1.0", "REGION PROPERTIES\n==============================================\n\nLoad an image...")
+        ttk.Label(self.info_frame, text="Region's properties").pack()
+        self.region_data = tkst.ScrolledText(master=self.info_frame, height=10, width=47)
+        self.region_data.pack()
+        self.region_data.insert("1.0", "Please load an image...")
 
         # IMAGE LABELS - filled when loading an image
         self.original_image = ttk.Label(self.original_tab)
@@ -127,7 +126,7 @@ class BaseApp():
         self.labelled_image.pack()
 
         # show region properties
-        self.region_data.replace(1.0, tk.END, "REGION PROPERTIES\n==============================================\n\n" + str(regions_properties))
+        self.region_data.replace(1.0, tk.END, regions_properties)
 
 
     def new_img_size(self, current_size):
