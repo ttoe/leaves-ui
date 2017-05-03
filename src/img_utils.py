@@ -44,13 +44,14 @@ def processing_pipe(image_path):
     regions_properties = get_regions_props(labelled_image) 
 
     # returning images after converting segmented image back to 8 bit format & labelling it
-    images = { "original_img": img,
-               "greyscale_img": greyscale_cropped_image,
-               "segmented_ubyte_img_bw": img_as_ubyte(greyscale_closed_rem),
-               "labelled_image": labelled_image,
-               "labelled_ubyte_img_rbg": img_as_ubyte(image_label_overlay) }
+    image_data = { "original_img": img,
+                   "greyscale_img": greyscale_cropped_image,
+                   "segmented_ubyte_img_bw": img_as_ubyte(greyscale_closed_rem),
+                   "labelled_image": labelled_image,
+                   "labelled_ubyte_img_rbg": img_as_ubyte(image_label_overlay),
+                   "regions_properties": regions_properties }
 
-    return images
+    return image_data
 
 
 def get_regions_props(img):
@@ -71,7 +72,6 @@ def get_regions_props(img):
 
     # appending data to dataframe
     dataframe.loc[len(dataframe)+1] = [props.eccentricity, props.extent, props.solidity, roundness]
-    print(dataframe)
     # else:
         # print("More than 1 region remaining!")
 

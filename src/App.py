@@ -8,6 +8,7 @@ matplotlib.use("TkAgg")
 
 import tkinter     as tk
 import tkinter.ttk as ttk
+import tkinter.scrolledtext as tkst
 import skimage.io  as io
 import numpy       as np
 from   tkinter.filedialog import askopenfilename
@@ -27,22 +28,22 @@ class BaseApp():
         self.root.title("Leaves UI")
         self.root.geometry("1000x700")
         self.root.attributes("-fullscreen", True)
-        self.frame = ttk.Frame(self.root, width=1000, height=700)
-        self.frame.pack(side="top", fill="both", expand=True)
+        #self.frame = ttk.Frame(self.root, width=1000, height=700)
+        #self.frame.pack(side="top", fill="both", expand=True)
 
         # MAIN FRAMES
-        self.menu_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
-        self.tab_frame = ttk.Frame(self.frame, relief="ridge", borderwidth=2)
-        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=2)
+        self.menu_frame = ttk.Frame(self.root, relief="ridge", borderwidth=1)
+        self.tab_frame = ttk.Frame(self.root, relief="ridge", borderwidth=1)
+        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=1)
 
         # MAIN FRAMES - PACKING
-        self.menu_frame.pack(side="left", fill="both", expand=False, padx=5, pady=5)
-        self.tab_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
-        self.info_frame.pack(side="bottom", fill="x", expand=False, padx=5, pady=5)
+        self.menu_frame.pack(side="left", fill="both", expand=False, padx=1, pady=1)
+        self.tab_frame.pack(side="right", fill="both", expand=True, padx=1, pady=1)
+        self.info_frame.pack(side="bottom", fill="x", expand=True, padx=1, pady=1)
 
         # MENU FRAME CONTENT
-        open_button = ttk.Button(self.menu_frame, text="Open", command=self.open_file).pack()
-        quit_button = ttk.Button(self.menu_frame, text="Quit", command=quit).pack()
+        ttk.Button(self.menu_frame, text="Open", command=self.open_file).pack(side="left")
+        ttk.Button(self.menu_frame, text="Quit", command=quit).pack(side="left")
 
         # TAB FRAME CONTENT
         self.image_tabs = ttk.Notebook(self.tab_frame)
@@ -56,6 +57,11 @@ class BaseApp():
         self.image_tabs.add(self.labelled_tab, text="Labelled")
         self.image_tabs.pack()
 
+        # REGION DATA
+        self.region_data = tkst.ScrolledText(master=self.info_frame, height=15, width=50)
+        self.region_data.pack()#side="bottom", expand=False, fill="x")
+        self.region_data.insert("1.0", "REGION PROPERTIES\n==============================================\n\nLoad an image...")
+
         # IMAGE LABELS - filled when loading an image
         self.original_image = ttk.Label(self.original_tab)
         self.greyscale_image = ttk.Label(self.original_tab)
@@ -67,6 +73,7 @@ class BaseApp():
 
     # HELPER FUNCTIONS
 
+    # outsource updating function
     def open_file(self):
         """missing docstring"""
         image_path = askopenfilename(title="Choose an image file")
@@ -77,6 +84,7 @@ class BaseApp():
         greyscale_image     = processed_images["greyscale_img"]
         segmented_image     = processed_images["segmented_ubyte_img_bw"]
         labelled_image      = processed_images["labelled_ubyte_img_rbg"]
+        regions_properties  = processed_images["regions_properties"]
 
         pil_original_image  = Image.fromarray(original_image, "RGB")
         pil_greyscale_image = Image.fromarray(greyscale_image, "L")
@@ -101,6 +109,7 @@ class BaseApp():
 
         # DESTROY CURRENT IMAGES AND DISPLAY NEW ONES
 
+        # make loop??
         self.original_image.destroy()
         self.original_image = ttk.Label(self.original_tab, image=self.original_image_file)
         self.original_image.pack()
@@ -116,6 +125,10 @@ class BaseApp():
         self.labelled_image.destroy()
         self.labelled_image = ttk.Label(self.labelled_tab, image=self.labelled_image_file)
         self.labelled_image.pack()
+
+        # show region properties
+        self.region_data.replace(1.0, tk.END, "REGION PROPERTIES\n==============================================\n\n" + str(regions_properties))
+
 
     def new_img_size(self, current_size):
         img_width, img_height = current_size
