@@ -12,9 +12,9 @@ import tkinter.scrolledtext as tkst
 import glob                 as glob
 import skimage.io           as io
 import numpy                as np
-from   tkinter.filedialog import askopenfilename, askdirectory
-from   PIL                import ImageTk, Image
-import PIL.Image as pi
+from   tkinter.filedialog   import askdirectory
+from   PIL                  import ImageTk, Image
+# import PIL.Image as pi
 
 # import custom functions
 import img_utils as iu
@@ -58,7 +58,6 @@ class BaseApp():
                                   self.selected_image,
                                   *self.directory_filenames,
                                   command=self.process_selected)
-        # self.drop = tk.OptionMenu(self.drop_frame, self.selected_image, *self.directory_filenames, command)
         self.drop["width"] = 30
         self.drop.pack()
 
@@ -92,29 +91,27 @@ class BaseApp():
 
     # HELPER FUNCTIONS
 
-    def get_selected_index(self):
-        """missing docstring"""
-
-        return self.directory_filenames.index(self.selected_image.get())
-
-
     def select_previous(self):
         """missing docstring"""
 
+        selected_index = self.directory_filenames.index(self.selected_image.get())
 
-        selected_index = self.get_selected_index()
-        new_selected_image = self.directory_filenames[selected_index - 1]
-        self.selected_image.set(new_selected_image)
-        self.process_selected(self.selected_image.get())
+        if (selected_index > 0):
+            new_selected_image = self.directory_filenames[selected_index - 1]
+            self.selected_image.set(new_selected_image)
+            self.process_selected(self.selected_image.get())
 
 
     def select_next(self):
         """missing docstring"""
 
-        selected_index = self.get_selected_index()
-        new_selected_image = self.directory_filenames[selected_index + 1]
-        self.selected_image.set(new_selected_image)
-        self.process_selected(self.selected_image.get())
+        num_files = len(self.directory_filenames)
+        selected_index = self.directory_filenames.index(self.selected_image.get())
+
+        if (num_files - 1 > selected_index):
+            new_selected_image = self.directory_filenames[selected_index + 1]
+            self.selected_image.set(new_selected_image)
+            self.process_selected(self.selected_image.get())
 
 
     def get_dir_filenames(self):
@@ -124,6 +121,7 @@ class BaseApp():
         image_names = glob.glob(images_dir+"/*.*")
 
         self.directory_filenames = image_names
+        self.selected_image.set(image_names[0])
 
         # update drop down
         self.drop.destroy()
@@ -133,6 +131,8 @@ class BaseApp():
                                   command=self.process_selected)
         self.drop["width"] = 30
         self.drop.pack()
+
+        self.process_selected(self.selected_image.get())
 
 
     # display_images_and_data :: ImageFilePath -> IO ()
@@ -181,7 +181,6 @@ class BaseApp():
         self.labelled_image.destroy()
         self.labelled_image = ttk.Label(self.labelled_tab, image=self.labelled_image_file)
         self.labelled_image.pack()
-
 
         # show region properties
         self.region_data.replace(1.0, tk.END, regions_properties)
