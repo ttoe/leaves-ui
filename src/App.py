@@ -48,16 +48,20 @@ class BaseApp():
 
         # MENU FRAME CONTENT
         ttk.Button(self.button_frame, text="Select directory", command=self.get_dir_filenames).pack(side="left")
-        ttk.Button(self.button_frame, text="Quit", command=quit).pack(side="left")
+        ttk.Button(self.button_frame, text="Quit", command=quit).pack(side="right")
 
         # DROP DOWN MENU
+        ttk.Button(self.drop_frame, text="<", width=1, command=self.select_previous).pack(side="left")
+        ttk.Button(self.drop_frame, text=">", width=1, command=self.select_next).pack(side="right")
+
         self.drop = tk.OptionMenu(self.drop_frame,
                                   self.selected_image,
                                   *self.directory_filenames,
                                   command=self.process_selected)
         # self.drop = tk.OptionMenu(self.drop_frame, self.selected_image, *self.directory_filenames, command)
-        self.drop["width"] = 40
+        self.drop["width"] = 30
         self.drop.pack()
+
 
         # TAB FRAME CONTENT
         self.image_tabs = ttk.Notebook(self.tab_frame)
@@ -88,29 +92,47 @@ class BaseApp():
 
     # HELPER FUNCTIONS
 
+    def get_selected_index(self):
+        """missing docstring"""
+
+        return self.directory_filenames.index(self.selected_image.get())
+
+
+    def select_previous(self):
+        """missing docstring"""
+
+
+        selected_index = self.get_selected_index()
+        new_selected_image = self.directory_filenames[selected_index - 1]
+        self.selected_image.set(new_selected_image)
+        self.process_selected(self.selected_image.get())
+
+
+    def select_next(self):
+        """missing docstring"""
+
+        selected_index = self.get_selected_index()
+        new_selected_image = self.directory_filenames[selected_index + 1]
+        self.selected_image.set(new_selected_image)
+        self.process_selected(self.selected_image.get())
+
+
     def get_dir_filenames(self):
         """missing docstring"""
 
         images_dir = askdirectory(title="Choose image directory", mustexist=True)
         image_names = glob.glob(images_dir+"/*.*")
 
-        self.directory_filenames = image_names 
+        self.directory_filenames = image_names
 
         # update drop down
-        # !!! das muss anders gehen !!!
         self.drop.destroy()
         self.drop = tk.OptionMenu(self.drop_frame,
                                   self.selected_image,
                                   *self.directory_filenames,
                                   command=self.process_selected)
-        self.drop["width"] = 40
+        self.drop["width"] = 30
         self.drop.pack()
-
-#         self.selected_image.set("")
-#         self.drop["menu"].delete(0, "end")
-#         for option in image_names:
-#             self.drop["menu"].add_command(label=option, command=tk._setit(self.selected_image, option))
-#         self.drop["menu"].add_command(command=self.process_selected)
 
 
     # display_images_and_data :: ImageFilePath -> IO ()
@@ -168,7 +190,6 @@ class BaseApp():
     def process_selected(self, selection):
         """missing docstring"""
 
-        # self.display_images_and_data(self.selected_image.get())
         self.display_images_and_data(selection)
 
 # RUN THE APP
