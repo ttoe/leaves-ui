@@ -12,9 +12,8 @@ import tkinter.scrolledtext as tkst
 import glob                 as glob
 import skimage.io           as io
 import numpy                as np
-from   tkinter.filedialog   import askdirectory
+from   tkinter.filedialog   import askdirectory, asksaveasfilename
 from   PIL                  import ImageTk, Image
-# import PIL.Image as pi
 
 # import custom functions
 import img_utils as iu
@@ -33,11 +32,11 @@ class BaseApp():
         self.selected_image = tk.StringVar()
 
         # MAIN FRAMES
-        self.menu_frame = ttk.Frame(self.root, relief="ridge", borderwidth=2)
-        self.tab_frame  = ttk.Frame(self.root, relief="ridge", borderwidth=2)
-        self.button_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=2)
-        self.drop_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=2)
-        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=2)
+        self.menu_frame = ttk.Frame(self.root, relief="ridge", borderwidth=1)
+        self.tab_frame  = ttk.Frame(self.root, relief="ridge", borderwidth=1)
+        self.button_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=1)
+        self.drop_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=1)
+        self.info_frame = ttk.Frame(self.menu_frame, relief="ridge", borderwidth=1)
 
         # MAIN FRAMES - PACKING
         self.menu_frame.pack(side="left", fill="both", expand=False, padx=2, pady=2)
@@ -61,7 +60,6 @@ class BaseApp():
         self.drop["width"] = 30
         self.drop.pack()
 
-
         # TAB FRAME CONTENT
         self.image_tabs = ttk.Notebook(self.tab_frame)
         self.original_tab = tk.Frame(self.image_tabs)
@@ -79,6 +77,9 @@ class BaseApp():
         self.region_data = tkst.ScrolledText(master=self.info_frame, height=10, width=47)
         self.region_data.pack()
         self.region_data.insert("1.0", "Please load an image...")
+
+        # SAVE BUTTON
+        ttk.Button(self.info_frame, text="Save image", command=self.save_current_tab_image).pack()
 
         # IMAGE LABELS - filled when loading an image
         self.original_image  = ttk.Label(self.original_tab)
@@ -141,10 +142,10 @@ class BaseApp():
 
         processed_image_object = iu.processing_pipe(file_path)
 
-        pil_original_image     = Image.fromarray(processed_image_object["original_img"], "RGB")
-        pil_greyscale_image    = Image.fromarray(processed_image_object["greyscale_img"], "L")
-        pil_segmented_image    = Image.fromarray(processed_image_object["segmented_ubyte_img_bw"])
-        pil_labelled_image     = Image.fromarray(processed_image_object["labelled_ubyte_img_rbg"], "RGB")
+        self.pil_original_image     = Image.fromarray(processed_image_object["original_img"], "RGB")
+        self.pil_greyscale_image    = Image.fromarray(processed_image_object["greyscale_img"], "L")
+        self.pil_segmented_image    = Image.fromarray(processed_image_object["segmented_ubyte_img_bw"])
+        self.pil_labelled_image     = Image.fromarray(processed_image_object["labelled_ubyte_img_rbg"], "RGB")
 
         regions_properties     = processed_image_object["regions_properties"] 
 
@@ -153,16 +154,16 @@ class BaseApp():
         frame_height = int(self.tab_frame.winfo_height() * 0.9)
         max_size     = (frame_width, frame_height)
 
-        pil_original_image.thumbnail(max_size)
-        pil_greyscale_image.thumbnail(max_size)
-        pil_segmented_image.thumbnail(max_size)
-        pil_labelled_image.thumbnail(max_size)
+        self.pil_original_image.thumbnail(max_size)
+        self.pil_greyscale_image.thumbnail(max_size)
+        self.pil_segmented_image.thumbnail(max_size)
+        self.pil_labelled_image.thumbnail(max_size)
 
         # Filling the prepared image labels
-        self.original_image_file  = ImageTk.PhotoImage(pil_original_image)
-        self.greyscale_image_file = ImageTk.PhotoImage(pil_greyscale_image)
-        self.segmented_image_file = ImageTk.PhotoImage(pil_segmented_image)
-        self.labelled_image_file  = ImageTk.PhotoImage(pil_labelled_image)
+        self.original_image_file  = ImageTk.PhotoImage(self.pil_original_image)
+        self.greyscale_image_file = ImageTk.PhotoImage(self.pil_greyscale_image)
+        self.segmented_image_file = ImageTk.PhotoImage(self.pil_segmented_image)
+        self.labelled_image_file  = ImageTk.PhotoImage(self.pil_labelled_image)
 
         # DESTROY CURRENT IMAGES AND DISPLAY NEW ONES
 
@@ -190,6 +191,20 @@ class BaseApp():
         """missing docstring"""
 
         self.display_images_and_data(selection)
+
+    def save_current_tab_image(self):
+        current_tab = self.image_tabs.tab(self.image_tabs.select(), "text")
+        print(current_tab)
+        save_file_name = asksaveasfilename(defaultextension="bmp", title="Save currently displayed image")
+
+        if   current_tab == "Original":
+            self.pil_original_image.save(save_file_name)
+        elif current_tab == "Greyscale":
+            self.pil_greyscale_image.save(save_file_name)
+        elif current_tab == "Segmented":
+            self.pil_segmented_image.save(save_file_name)
+        else:
+            self.pil_labelled_image.save(save_file_name)
 
 # RUN THE APP
 BaseApp()
