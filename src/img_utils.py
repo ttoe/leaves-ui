@@ -2,14 +2,12 @@
 
 import numpy              as np
 import pandas             as pd
-# from   PIL                import Image
 from   skimage.filters    import threshold_otsu
-from   skimage.io         import imread#, imsave
+from   skimage.io         import imread
 from   skimage.morphology import binary_closing, remove_small_objects
 from   skimage.measure    import label, regionprops
 from   skimage.color      import label2rgb
-from   skimage.util       import img_as_ubyte#, img_as_bool
-# from   skimage.transform  import rescale
+from   skimage.util       import img_as_ubyte
 
 
 def filter_regions_by_extent(regions):
@@ -63,16 +61,12 @@ def get_regions_props(img):
     # creating dataframe
     dataframe = pd.DataFrame(columns=["eccentricity", "extent", "solidity", "roundness"])
 
-    # if len(filtered_regions) == 1:
     # getting the props for the only region
-    props = filtered_regions[0]
+    for props in filtered_regions:
+        # manually calculating roundness
+        roundness = 4 * np.pi * props.area / props.perimeter**2
 
-    # manually calculating roundness
-    roundness = 4 * np.pi * props.area / props.perimeter**2
-
-    # appending data to dataframe
-    dataframe.loc[len(dataframe)+1] = [props.eccentricity, props.extent, props.solidity, roundness]
-    # else:
-        # print("More than 1 region remaining!")
+        # appending data to dataframe
+        dataframe.loc[len(dataframe)+1] = [props.eccentricity, props.extent, props.solidity, roundness]
 
     return dataframe
