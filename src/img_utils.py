@@ -12,7 +12,7 @@ from   skimage.util       import img_as_ubyte
 
 def filter_regions_by_extent(regions):
     """missing docstring"""
-    return list(filter(lambda r: r.extent <= 0.8, regions))
+    return list(filter(lambda r: r.extent <= 1.0, regions))
 
 
 def processing_pipe(image_path):
