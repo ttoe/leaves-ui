@@ -194,7 +194,6 @@ class BaseApp():
 
     def save_current_tab_image(self):
         current_tab = self.image_tabs.tab(self.image_tabs.select(), "text")
-        print(current_tab)
         save_file_name = asksaveasfilename(defaultextension="bmp", title="Save currently displayed image")
 
         if   current_tab == "Original":
