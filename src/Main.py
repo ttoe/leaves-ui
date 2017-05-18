@@ -9,16 +9,13 @@ matplotlib.use("TkAgg")
 import tkinter              as tk
 import tkinter.ttk          as ttk
 import tkinter.scrolledtext as tkst
+import tkinter.filedialog   as tkfd # import askdirectory, asksaveasfilename
 import glob                 as glob
 import skimage.io           as io
 import numpy                as np
-from   tkinter.filedialog   import askdirectory, asksaveasfilename
 from   PIL                  import ImageTk, Image
+from   util.img_processing  import processing_pipe
 
-# import custom functions
-import img_utils as iu
-
-# App
 class BaseApp():
     """missing docstring"""
     def __init__(self):
@@ -118,7 +115,7 @@ class BaseApp():
     def get_dir_filenames(self):
         """missing docstring"""
 
-        images_dir = askdirectory(title="Choose image directory", mustexist=True)
+        images_dir = tkfd.askdirectory(title="Choose image directory", mustexist=True)
         image_names = glob.glob(images_dir+"/*.*")
 
         self.directory_filenames = image_names
@@ -140,7 +137,7 @@ class BaseApp():
     def display_images_and_data(self, file_path):
         """missing docstring"""
 
-        processed_image_object = iu.processing_pipe(file_path)
+        processed_image_object = processing_pipe(file_path)
 
         self.pil_original_image     = Image.fromarray(processed_image_object["original_img"], "RGB")
         self.pil_greyscale_image    = Image.fromarray(processed_image_object["greyscale_img"], "L")
@@ -194,7 +191,7 @@ class BaseApp():
 
     def save_current_tab_image(self):
         current_tab = self.image_tabs.tab(self.image_tabs.select(), "text")
-        save_file_name = asksaveasfilename(defaultextension="bmp", title="Save currently displayed image")
+        save_file_name = tkfd.asksaveasfilename(defaultextension="bmp", title="Save currently displayed image")
 
         if   current_tab == "Original":
             self.pil_original_image.save(save_file_name)
