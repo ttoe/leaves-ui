@@ -4,6 +4,8 @@ A GUI for viewing intermediate steps and results when processing leave images.
 
 To run the program `python >= 3.5` is needed. The python package `virtualenv` is needed to create an isolated python environment for further packages to be installed in.
 
+Clone the repository, `cd` into it and run `run.sh` or follow these steps:
+
 ```
 > git clone https://github.com/ttoe/leaves-ui
 > cd leaves-ui
@@ -24,3 +26,6 @@ Run `Main.py` from within the activated virtual environment, i.e. `src/Main.py` 
 Choose a directory containing images, e.g. the `img/` directory from this repository.
 
 After quitting the program run `deactivate` to deactivate the virtual environment.
+
+### Using a custom image processing pipe
+…
