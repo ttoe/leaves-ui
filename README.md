@@ -16,7 +16,11 @@ Make sure a python executable of version 3.5 or newer was copied into the local 
 Then install the needed packages in the activated virtual environment.
 
 ```
-> pip install -r leaves-ui/packages.txt
+> pip install -r packages.txt
 ```
 
-Run `Main.py` form within the activated virtual environment, e.g. `leaves-ui/src/Main.py`.
+Run `Main.py` from within the activated virtual environment, i.e. `src/Main.py` after making it executable or run `python src/Main.py` instead.
+
+Choose a directory containing images, e.g. the `img/` directory from this repository.
+
+After quitting the program run `deactivate` to deactivate the virtual environment.
