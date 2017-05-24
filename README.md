@@ -2,7 +2,7 @@ A GUI for viewing intermediate steps and results when processing leave images.
 
 ### Running
 
-This application was tested with `python >= 3.6.1`. The python package `virtualenv` is needed to create an isolated python environment for further packages to be installed in.
+This application was tested with `python==3.6.1`. The python package `virtualenv` is needed to create an isolated python environment for further packages to be installed in.
 
 Clone the repository, `cd` into it and run `run.sh` or follow these steps:
 
