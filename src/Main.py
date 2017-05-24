@@ -150,7 +150,7 @@ class BaseApp():
         self.pil_original_image  = Image.fromarray(processed_image_object["original_img"], "RGB")
         self.pil_greyscale_image = Image.fromarray(processed_image_object["greyscale_img"], "L")
         self.pil_segmented_image = Image.fromarray(processed_image_object["segmented_ubyte_img_bw"])
-        self.pil_labelled_image  = Image.fromarray(processed_image_object["labelled_ubyte_img_rbg"], "RGB")
+        self.pil_labelled_image  = Image.fromarray(processed_image_object["labelled_ubyte_img_rgb"], "RGB")
 
         regions_properties       = processed_image_object["regions_properties"] 
 
