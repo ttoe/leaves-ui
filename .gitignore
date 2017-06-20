@@ -1,2 +1,9 @@
 __init__.py
 __pycache__/
+.DS_Store
+.Python
+bin/
+include/
+lib/
+share/
+pip-selfcheck.json
