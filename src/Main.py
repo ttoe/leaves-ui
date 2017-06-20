@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-"""missing docstring"""
+""" This is an app to view/save the (intermediate) results of processing images,
+    using Python's skimage library. The purpose is to have quick visual feedback,
+    when tweaking the image processing pipeline, and therefore to be able to
+    easily identify errors and to quickly save images for later use. """
 
 # Matplotlib import is a workaround for a c++ library problem
 import matplotlib
@@ -14,12 +17,15 @@ import glob                 as glob
 import skimage.io           as io
 import numpy                as np
 from   PIL                  import ImageTk, Image
-from   util.img_processing  import processing_pipe
+
+# the custom image processing pipe
+from   pipe                 import processing_pipe
+
 
 class BaseApp():
     """ The entry point for the program.
         Defines the components of the UI.
-        Call as 'BaseApp() to run. """
+        Call as 'BaseApp() to run the app. """
 
     def __init__(self):
         # BASIC

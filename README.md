@@ -7,18 +7,21 @@ This application was tested with `python==3.6.1`. The python package `virtualenv
 Clone the repository, `cd` into it and run `run.sh` or follow these steps:
 
 ```
-> git clone https://github.com/ttoe/leaves-ui
-> cd leaves-ui
-> virtualenv .
-> source bin/activate
+git clone https://github.com/ttoe/leaves-ui
+
+cd leaves-ui
+
+virtualenv .
+
+source bin/activate
 ```
 
-Make sure a python executable of version 3.5 or newer was copied into the local environment.
+Make sure a python executable of at least version 3.6 was copied into the local environment.
 
 Then install the needed packages in the activated virtual environment.
 
 ```
-> pip install -r packages.txt
+pip install -r packages.txt
 ```
 
 Run `Main.py` from within the activated virtual environment, i.e. `src/Main.py` after making it executable or run `python src/Main.py` instead.
@@ -29,7 +32,7 @@ After quitting the program run `deactivate` to deactivate the virtual environmen
 
 ### Using a custom image processing pipe
 
-The entrance point Main.py uses the returned data of a function called `processing_pipe` from `util/img_processing.py`. This function takes as input an image file that must be readable by skimage's `imread` function.
+The entrance point Main.py uses the returned data of a function called `processing_pipe` from `pipe.py`. This function takes as input an image file that must be readable by skimage's `imread` function.
 
 The base app needs the `processing_pipe` function to return a dictionary of the following key-value pairs:
 

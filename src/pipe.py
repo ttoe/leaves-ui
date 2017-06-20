@@ -1,4 +1,4 @@
-"""missing docstring"""
+""" This module defines the image processing pipeline as described in README.md """
 
 import numpy              as np
 import pandas             as pd
@@ -10,14 +10,19 @@ from   skimage.color      import label2rgb
 from   skimage.util       import img_as_ubyte
 
 def processing_pipe(image_path):
-    """missing docstring"""
+    """ This is the actual image processing function.
+        It encapsulates every processing step from reading the file,
+        converting it to a numpy array, cropping, performing morphological
+        operations computing all region's properties (get_regions_props())
+        and returning the resulting properties as well as initial the
+        initial image, the intermediate and final images. """
 
     # reading data, converting to greyscale, converting to numpy array
     img = imread(image_path)
     greyscale_array = np.array(img)
     
     # cropping out the interesting part & extracting green channel (rgb -> grey)
-    greyscale_cropped_image = greyscale_array[:600, :600, 1]
+    greyscale_cropped_image = greyscale_array[:, :, 1]
 
     # segmenting using otsu's method
     global_threshold = threshold_otsu(greyscale_cropped_image)
@@ -47,7 +52,12 @@ def processing_pipe(image_path):
 
 
 def get_regions_props(img):
-    """missing docstring"""
+    """ The function computes the region's properties of a labelled image.
+        It returns a pandas DataFrame with the properties eccentricity,
+        extent, solidity and roundness (manually computed).
+        Other properties from the regionprops function or custom ones
+        could be included here as well. """
+
     # getting region's properties and filtering by extent
     regions_properties = regionprops(img, cache=True)
 
