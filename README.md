@@ -1,4 +1,4 @@
-A GUI for viewing intermediate steps and results when processing leave images.
+A GUI for viewing intermediate steps and results when processing leaf images.
 
 ### Running
 
